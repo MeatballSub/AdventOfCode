@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 [YEAR]"
+    exit 1
+fi
+
+YEAR="$1"
+
+for i in {1..25}
+do
+    ./mkday $YEAR $i
+done

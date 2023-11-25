@@ -1,0 +1,40 @@
+#!/bin/bash
+
+function usage()
+{
+    echo "Usage: $0 [Year] [Day]"
+    exit 1
+}
+
+function processArgs()
+{
+    if [ $# -ne 2 ]; then
+        usage
+    fi
+
+    YEAR="$1"
+    DAY=$(printf "%02d" "$2")
+}
+
+function hasProjectDir()
+{
+    if [ ! -d ./$YEAR/Day$DAY ]; then
+        echo "./$YEAR/Day$DAY doesn't exist"
+        exit 2
+    fi
+}
+
+function removeProject()
+{
+    dotnet sln AdventOfCode2023.sln remove ./$YEAR/Day$DAY/Day$DAY.csproj
+}
+
+function removeProjectDir()
+{
+    rm -fr $YEAR/Day$DAY
+}
+
+processArgs $@
+hasProjectDir
+removeProject
+removeProjectDir

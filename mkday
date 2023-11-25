@@ -1,0 +1,85 @@
+#!/bin/bash
+
+function usage()
+{
+    echo "Usage: $0 [Year] [Day]"
+    exit 1
+}
+
+function processArgs()
+{
+    if [ $# -ne 2 ]; then
+        usage
+    fi
+
+    YEAR="$1"
+    DAY=$(printf "%02d" "$2")
+}
+
+function makeProjectDir()
+{
+    if [ -d ./$YEAR/Day$DAY ]; then
+        echo "./$YEAR/Day$DAY already exists"
+        exit 2
+    fi
+
+    mkdir -pv $YEAR/Day$DAY
+}
+
+function makeInputFiles()
+{
+    touch $YEAR/Day$DAY/{input.txt,sample.txt}
+}
+
+function makeHelloWorld()
+{
+    cat > $YEAR/Day$DAY/Program.cs <<EOF
+using Library;
+using static Library.Geometry;
+using static Library.Optimize;
+using static Library.Parsing;
+
+Console.WriteLine("Hello World!");
+EOF
+}
+
+function makeProjectFile()
+{
+    cat > $YEAR/Day$DAY/Day$DAY.csproj <<EOF
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Library\Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sample.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
+EOF
+}
+
+function addProject()
+{
+    dotnet sln AdventOfCode2023.sln add ./$YEAR/Day$DAY/Day$DAY.csproj
+}
+
+processArgs $@
+makeProjectDir
+makeInputFiles
+makeHelloWorld
+makeProjectFile
+addProject
