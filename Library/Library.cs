@@ -176,7 +176,7 @@ namespace Library
             public virtual CostType? getBestCost(VertexType vertex) => best_costs.GetValueOrDefault(vertex, default);
 
             public virtual void setBestCost(VertexType vertex, CostType bestCost) => best_costs[vertex] = bestCost;
-            public bool containsBestCostFor(VertexType vertex) => best_costs.ContainsKey(vertex);
+            public virtual bool containsBestCostFor(VertexType vertex) => best_costs.ContainsKey(vertex);
             public virtual void setPredecessor(VertexType vertex, VertexType predecessor) => predecessors[vertex] = predecessor;
         }
 
