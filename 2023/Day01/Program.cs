@@ -1,6 +1,8 @@
 using Library;
 using static Library.Parsing;
 
+long toCalibrationValue(IEnumerable<long> nums) => (nums.First().ToString()[0] - '0') * 10 + nums.Last() % 10;
+
 string replaceWordDigits(string line)
 {
     (string, string)[] replacers = [
@@ -33,13 +35,13 @@ string replaceWordDigits(string line)
 
 void run(string file_name)
 {
-    long sum = readFileLines(file_name).Select(_ => _.ExtractLongs()).Select(_ => (_.First().ToString()[0] - '0') * 10 + _.Last() % 10).Sum();
+    long sum = readFileLines(file_name).Select(_ => _.ExtractLongs()).Select(toCalibrationValue).Sum();
     Console.WriteLine($"Part 1 - {file_name}: {sum}");
 }
 
 void run2(string file_name)
 {
-    long sum = readFileLines(file_name).Select(replaceWordDigits).Select(_ => _.ExtractLongs()).Select(_ => (_.First().ToString()[0] - '0') * 10 + _.Last() % 10).Sum();
+    long sum = readFileLines(file_name).Select(replaceWordDigits).Select(_ => _.ExtractLongs()).Select(toCalibrationValue).Sum();
     Console.WriteLine($"Part 2 - {file_name}: {sum}");
 }
 
