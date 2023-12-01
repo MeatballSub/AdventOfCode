@@ -5,7 +5,7 @@ long toCalibrationValue(IEnumerable<long> nums) => (nums.First().ToString()[0] -
 
 string replaceWordDigits(string line)
 {
-    (string, string)[] replacers = [
+    (string text, string digit)[] replacers = [
         ("zero", "0"),
         ("one", "1"),
         ("two", "2"),
@@ -18,16 +18,16 @@ string replaceWordDigits(string line)
         ("nine", "9")
     ];
 
-    (int index, string digit) first_word = replacers.Select(_ => (line.IndexOf(_.Item1), _.Item2))
-        .Append((line.Length, ""))
-        .Where(_ => _.Item1 != -1)
-        .OrderBy(_ => _.Item1)
+    var first_word = replacers.Select(_ => (index: line.IndexOf(_.text), digit: _.digit))
+        .Append((index: line.Length, digit: ""))
+        .Where(_ => _.index != -1)
+        .OrderBy(_ => _.index)
         .First();
 
-    (int index, string digit) last_word = replacers.Select(_ => (line.LastIndexOf(_.Item1), _.Item2))
-        .Append((0, ""))
-        .Where(_ => _.Item1 != -1)
-        .OrderByDescending(_ => _.Item1)
+    var last_word = replacers.Select(_ => (index: line.LastIndexOf(_.text), digit: _.digit))
+        .Append((index: 0, digit: ""))
+        .Where(_ => _.index != -1)
+        .OrderByDescending(_ => _.index)
         .First();
 
     return line.Substring(0, first_word.index) + first_word.digit + last_word.digit + line.Substring(last_word.index);
