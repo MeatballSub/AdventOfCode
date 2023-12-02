@@ -1,12 +1,14 @@
 using System.Text.RegularExpressions;
 using static Library.Parsing;
 
-IEnumerable<(long game, long red, long green, long blue)> parse(string file_name) =>
+using Game = (long game, long red, long green, long blue);
+
+IEnumerable<Game> parse(string file_name) =>
     readFileLines(file_name).Select(_ => (_.game(), _.color("red"), _.color("green"), _.color("blue")));
 
-bool validGame((long game, long red, long green, long blue) game) => game.red <= 12 && game.green <= 13 && game.blue <= 14;
+bool validGame(Game game) => game.red <= 12 && game.green <= 13 && game.blue <= 14;
 
-long power((long game, long red, long green, long blue) game) => game.red * game.green * game.blue;
+long power(Game game) => game.red * game.green * game.blue;
 
 void part1(string file_name)
 {
