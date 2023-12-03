@@ -30,15 +30,8 @@ part2("input.txt");
 
 static class extensions
 {
-    public static long game(this string line)
-    {
-        Regex pattern = new Regex(@"^Game (?<game_num>\d+)");
-        return long.Parse(pattern.Match(line).Groups["game_num"].Value);
-    }
+    public static long game(this string line) => long.Parse(Regex.Match(line, @"^Game (?<game_num>\d+)").Groups["game_num"].Value);
 
-    public static long color(this string line, string color_name)
-    {
-        Regex pattern = new Regex($@"(?<num>\d+) {color_name}");
-        return pattern.Matches(line).Select(_ => long.Parse(_.Groups["num"].Value)).Max();
-    }
+    public static long color(this string line, string color_name) =>
+        Regex.Matches(line, $@"(?<num>\d+) {color_name}").Select(_ => _.Groups["num"].Value).Select(long.Parse).Max();
 }
