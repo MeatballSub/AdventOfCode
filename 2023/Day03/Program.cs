@@ -49,6 +49,5 @@ void part2(string file_name)
 
 part1("sample.txt");
 part1("input.txt");
-
 part2("sample.txt");
 part2("input.txt");
