@@ -35,6 +35,7 @@ List<MapEntry> MakeSeedRangePart2(string str)
 List<MapEntry> remapRange(List<MapEntry> range, List<MapEntry> map)
 {
     List<MapEntry> result = new();
+    // range is sorted by dest, map is sorted by source, so we have some early out possibilities below
     foreach (MapEntry range_entry in range)
     {
         int count = result.Count;
@@ -47,45 +48,66 @@ List<MapEntry> remapRange(List<MapEntry> range, List<MapEntry> map)
             long map_end = map_entry.source + map_entry.len - 1;
             long map_offset = map_entry.dest - map_entry.source;
 
+            // map range is too low move to next
             if(range_start > map_end)
             {
                 continue;
             }
+
+            // map range is too high, because sorted, no other map range will match, quit looking
+            if (map_start > range_end)
+            {
+                break;
+            }
+
+            // Range:   |---------|
+            //   Map:        |---------|
+            // Because map extends past range, and maps are sorted, no later maps will overlap quit looking
             if (range_start <= map_start && map_start <= range_end && range_end <= map_end)
             {
                 result.Add((range_entry.dest + covered_offset, range_entry.source + covered_offset, map_start - range_start));
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, range_end - map_start + 1));
                 break;
             }
-            else if(map_start <= range_start && range_end <= map_end)
+
+            // Range:      |---|
+            //   Map:   |---------|
+            // Because map extends past range, and maps are sorted, no later maps will overlap quit looking
+            if (map_start <= range_start && range_end <= map_end)
             {
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, range_entry.len));
                 break;
             }
-            else if(range_start <= map_start && map_end <= range_end)
+
+            // Range:   |---------|
+            //   Map:      |---|
+            // Because range extends past map, we have to keep looking, but change range start and how much of range is covered
+            if (range_start <= map_start && map_end <= range_end)
             {
                 result.Add((range_entry.dest + covered_offset, range_entry.source + covered_offset, map_start - range_start));
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, map_end - map_start + 1));
                 range_start = map_end + 1;
                 covered_offset += range_start - range_entry.dest;
             }
-            else if(map_start <= range_start && range_start <= map_end && map_end <= range_end)
+            // Range:        |---------|
+            //   Map:   |---------|
+            // Because range extends past map, we have to keep looking, but change range start and how much of range is covered
+            else if (map_start <= range_start && range_start <= map_end && map_end <= range_end)
             {
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, map_end - range_start + 1));
                 range_start = map_end + 1;
                 covered_offset += range_start - range_entry.dest;
             }
-            else if(map_start > range_end)
-            {
-                break;
-            }
         }
+
+        // We didn't add anything to the result(because no map ranges overlapped), add the whole range
         if(result.Count == count)
         {
             result.Add(range_entry);
         }
         else
         {
+            // see if range was partially covered, add the uncovered part
             long last_end = result.Last().source + result.Last().len - 1;
             if(last_end < range_entry.source + range_entry.len - 1)
             {
@@ -94,6 +116,7 @@ List<MapEntry> remapRange(List<MapEntry> range, List<MapEntry> map)
             }
         }
     }
+    // filter out the zero length ranges and make sure it's sorted by dest
     return result.Where(_ => _.len != 0).OrderBy(_ => _.dest).ToList();
 }
 
