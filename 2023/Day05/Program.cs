@@ -65,6 +65,9 @@ List<MapEntry> remapRange(List<MapEntry> range, List<MapEntry> map)
             // Because map extends past range, and maps are sorted, no later maps will overlap quit looking
             if (range_start <= map_start && map_start <= range_end && range_end <= map_end)
             {
+                //            1    2
+                // Range:   |----|----|
+                //   Map:        |---------|
                 result.Add((range_entry.dest + covered_offset, range_entry.source + covered_offset, map_start - range_start));
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, range_end - map_start + 1));
                 break;
@@ -84,6 +87,9 @@ List<MapEntry> remapRange(List<MapEntry> range, List<MapEntry> map)
             // Because range extends past map, we have to keep looking, but change range start and how much of range is covered
             if (range_start <= map_start && map_end <= range_end)
             {
+                //           1   2
+                // Range:   |--|---|--|
+                //   Map:      |---|
                 result.Add((range_entry.dest + covered_offset, range_entry.source + covered_offset, map_start - range_start));
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, map_end - map_start + 1));
                 range_start = map_end + 1;
@@ -94,6 +100,9 @@ List<MapEntry> remapRange(List<MapEntry> range, List<MapEntry> map)
             // Because range extends past map, we have to keep looking, but change range start and how much of range is covered
             else if (map_start <= range_start && range_start <= map_end && map_end <= range_end)
             {
+                //                 1
+                // Range:        |----|----|
+                //   Map:   |---------|
                 result.Add((range_entry.dest + covered_offset + map_offset, range_entry.source + covered_offset, map_end - range_start + 1));
                 range_start = map_end + 1;
                 covered_offset += range_start - range_entry.dest;
