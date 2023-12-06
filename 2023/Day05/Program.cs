@@ -9,15 +9,9 @@ MapEntry asMapEntry(string str)
     return new MapEntry(values[0], values[1], values[2]);
 }
 
-List<MapEntry> asMapEntries(string arr)
-{
-    return arr.SplitLines().Skip(1).Select(asMapEntry).OrderBy(_ => _.source).ToList();
-}
+List<MapEntry> asMapEntries(string arr) => arr.SplitLines().Skip(1).Select(asMapEntry).OrderBy(_ => _.source).ToList();
 
-List<MapEntry> MakeSeedRangePart1(string str)
-{
-    return str.ExtractLongs().Select(_ => new MapEntry(_, _, 1)).OrderBy(_ => _.dest).ToList();
-}
+List<MapEntry> MakeSeedRangePart1(string str) => str.ExtractLongs().Select(_ => new MapEntry(_, _, 1)).OrderBy(_ => _.dest).ToList();
 
 List<MapEntry> MakeSeedRangePart2(string str)
 {
