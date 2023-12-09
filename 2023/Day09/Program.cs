@@ -34,14 +34,7 @@ static class extensions
     }
     public static long Extrapolate(this List<long> nums)
     {
-        long n = nums.Count();
-        long value = 0;
-        for (int k = 0; k < nums.Count(); ++k)
-        {
-            long sign = (n - k) % 2 == 0 ? -1 : 1;
-            long coef = GetBinCoeff(n, k);
-            value += nums[k] * coef * sign;
-        }
-        return value;
+        int n = nums.Count();
+        return Enumerable.Range(0, n).Select(k => ((n - k) % 2 == 0 ? -1 : 1) * GetBinCoeff(n, k) * nums[k]).Sum();
     }
 }
