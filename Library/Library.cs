@@ -148,6 +148,37 @@ namespace Library
             enumerable.Aggregate(T.MultiplicativeIdentity, (acc, cur) => acc * cur);
     }
 
+    public static class MathStuff
+    {
+        public static long GCD(long a, long b)
+        {
+            while (b != 0)
+            {
+                var temp = b;
+                b = a % b;
+                a = temp;
+            }
+
+            return a;
+        }
+
+        public static long LCM(long a, long b) => a / GCD(a, b) * b;
+
+        public static long LCM(this IEnumerable<long> values) => values.Aggregate(LCM);
+
+        public static long GetBinCoeff(long n, long k)
+        {
+            long r = 1;
+            if (k > n) return 0;
+            for (long d = 1; d <= k; d++)
+            {
+                r *= n--;
+                r /= d;
+            }
+            return r;
+        }
+    }
+
     public static class Optimize
     {
         public interface IGraph<VertexType, CostType> where VertexType : IEquatable<VertexType> where CostType : IComparable<CostType>, IAdditiveIdentity<CostType, CostType>, IAdditionOperators<CostType, CostType, CostType>

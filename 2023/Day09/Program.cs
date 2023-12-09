@@ -1,4 +1,5 @@
 using Library;
+using static Library.MathStuff;
 using static Library.Parsing;
 
 void part1(string file_name)
@@ -20,18 +21,6 @@ part2("input.txt");
 
 static class extensions
 {
-    private static long GetBinCoeff(long N, long K)
-    {
-        long r = 1;
-        long d;
-        if (K > N) return 0;
-        for (d = 1; d <= K; d++)
-        {
-            r *= N--;
-            r /= d;
-        }
-        return r;
-    }
     public static long Extrapolate(this List<long> nums)
     {
         int n = nums.Count();
