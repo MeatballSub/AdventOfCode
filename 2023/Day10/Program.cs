@@ -107,54 +107,45 @@ char getStartPipe(string[] input, Point start)
     Func<Point, bool> inBounds = p => (0 <= p.X) && (p.X < input[0].Length) && (0 <= p.Y) && (p.Y < input.Count());
 
     string possibilities = "|-LJ7F";
+    valid_neighbor_values.Where(neighbor => inBounds(neighbor.Key) && neighbor.Value.Contains(input[neighbor.Key.Y][(int)neighbor.Key.X])).ToList()
+                         .ForEach(neighbor => possibilities = string.Join("", possibilities.Intersect(valid_values[neighbor.Key])));
 
-    foreach (var neighbor in valid_neighbor_values)
-    {
-        if (inBounds(neighbor.Key) && neighbor.Value.Contains(input[neighbor.Key.Y][(int)neighbor.Key.X]))
-        {
-            possibilities = string.Join("",possibilities.Intersect(valid_values[neighbor.Key]));
-        }
-    }
 
     return possibilities[0];
+}
+
+void display(List<string> field, string header)
+{
+    if (trace)
+    {
+        Console.WriteLine($"{header}:");
+        for (int y = 0; y < field.Count(); ++y)
+        {
+            for (int x = 0; x < field[y].Length; ++x)
+            {
+                Console.Write(field[y][x]);
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine();
+    }
 }
 
 (string[] lines, long height, long width, Dictionary<Point, long> steps) findLoop(string file_name, Upsample upsample)
 {
     string[] input = readFileLines(file_name);
+    display(input.ToList(), "Input");
+
     Point start = input.Select((l, y) => (l, y)).Where(_ => _.l.Contains('S')).Select(_ => new Point(_.l.IndexOf('S'), _.y)).First();
-    if(trace)
-    {
-        Console.WriteLine("Input:");
-        for(int y = 0; y < input.Count(); ++y)
-        {
-            for (int x = 0; x < input[y].Length; ++x)
-            {
-                Console.Write(input[y][x]);
-            }
-            Console.WriteLine();
-        }
-        Console.WriteLine();
-    }
     char start_pipe = getStartPipe(input, start);
+
     string[] lines = upsample(input, start_pipe);
-    if (trace)
-    {
-        Console.WriteLine("Upsampled:");
-        for (int y = 0; y < lines.Count(); ++y)
-        {
-            for (int x = 0; x < lines[y].Length; ++x)
-            {
-                Console.Write(lines[y][x]);
-            }
-            Console.WriteLine();
-        }
-        Console.WriteLine();
-    }
+    display(lines.ToList(), "Upsampled");
+
     long height = lines.Count();
     long width = lines[0].Length;
     Dictionary<Point, long> steps = new();
-
+    // re-find the start, it might have moved during upsampling
     start = lines.Select((l, y) => (l, y)).Where(_ => _.l.Contains('S')).Select(_ => new Point(_.l.IndexOf('S'), _.y)).First();
 
     Queue<Point> frontier = new();
@@ -185,21 +176,14 @@ char getStartPipe(string[] input, Point start)
             }
         }
     }
+
     if (trace)
     {
-        Console.WriteLine("The loop:");
         List<StringBuilder> loop = Enumerable.Range(0, lines.Count()).Select(_ => new StringBuilder(new string('.', lines[0].Length))).ToList();
         steps.Keys.ToList().ForEach(key => loop[(int)key.Y][(int)key.X] = lines[(int)key.Y][(int)key.X]);
-        for (int y = 0; y < loop.Count(); ++y)
-        {
-            for (int x = 0; x < loop[y].Length; ++x)
-            {
-                Console.Write(loop[y][x]);
-            }
-            Console.WriteLine();
-        }
-        Console.WriteLine();
+        display(loop.Select(_ => _.ToString()).ToList(), "The loop");
     }
+
     return (lines, height, width, steps);
 }
 
@@ -235,19 +219,10 @@ void part2(string file_name)
     loop.steps.Keys.ToList().ForEach(key => filled[(int)key.Y][(int)key.X] = loop.lines[(int)key.Y][(int)key.X]);
 
     filled = Fill(filled, fill_start);
-
+    
     if (trace)
     {
-        Console.WriteLine("Post fill:");
-        for (int y = 0; y < filled.Count(); ++y)
-        {
-            for (int x = 0; x < filled[y].Length; ++x)
-            {
-                Console.Write(filled[y][x]);
-            }
-            Console.WriteLine();
-        }
-        Console.WriteLine();
+        display(filled.Select(_ => _.ToString()).ToList(), "Post fill:");
 
         Console.WriteLine("Downsampled:");
         for (int y = 1; y < filled.Count(); y += 3)
