@@ -22,7 +22,7 @@ long solve(string file_name, long expansion_factor)
         }
     }
 
-    HashSet<Point> galaxies = new();
+    List<Point> galaxies = new();
     for (int y = 0; y < lines.Count; ++y)
     {
         long expand_y = empty_rows.Where(_ => _ < y).Count();
@@ -36,14 +36,12 @@ long solve(string file_name, long expansion_factor)
         }
     }
 
-    List<Point> galaxy_list = galaxies.ToList();
-
     long sum = 0;
-    for (int i = 0; i < galaxy_list.Count; ++i)
+    for (int i = 0; i < galaxies.Count; ++i)
     {
-        for (int j = i + 1; j < galaxy_list.Count; j++)
+        for (int j = i + 1; j < galaxies.Count; j++)
         {
-            sum += manhattanDistance(galaxy_list[i], galaxy_list[j]);
+            sum += manhattanDistance(galaxies[i], galaxies[j]);
         }
     }
     return sum;
