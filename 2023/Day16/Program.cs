@@ -1,7 +1,5 @@
 using Library;
-using System.Runtime.Intrinsics.Arm;
 using static Library.Geometry;
-using static Library.Optimize;
 using static Library.Parsing;
 
 using Beam = (Library.Geometry.Point loc, int dir);
@@ -65,50 +63,35 @@ long solve(string file_name, Point start_point, int start_dir)
     List<List<List<int>>> energized = new();
 
     Enumerable.Range(0, lines.Length).ToList().ForEach(y =>
-    {
-        energized.Add(new List<List<int>>());
-        Enumerable.Range(0, lines[y].Length).ToList().ForEach(x => energized[y].Add(new List<int>()));
-    }
+        {
+            energized.Add(new List<List<int>>());
+            Enumerable.Range(0, lines[y].Length).ToList().ForEach(x => energized[y].Add(new List<int>()));
+        }
     );
 
     List<Beam> beams = new() { (start_point, start_dir) };
 
     var inBounds = (Point p) => 0 <= p.Y && p.Y < lines.Length && 0 <= p.X && p.X < lines[(int)p.Y].Length;
 
-    long answer = 0;
-    long count = 0;
-    while (true)
+    while (beams.Count > 0)
     {
         List<Beam> newBeams = new();
         foreach (Beam beam in beams)
         {
             if (inBounds(beam.loc))
             {
-                if (!energized[(int)beam.loc.Y][(int)beam.loc.X].Contains(beam.dir))
+                List<int> loc_energized = energized[(int)beam.loc.Y][(int)beam.loc.X];
+                if (!loc_energized.Contains(beam.dir)) 
                 {
-                    energized[(int)beam.loc.Y][(int)beam.loc.X].Add(beam.dir);
+                    loc_energized.Add(beam.dir);
                     newBeams.AddRange(simBeam(beam, lines));
                 }
             }
         }
         beams = newBeams;
-        long value = energized.Select(l => l.Count(_ => _.Count > 0)).Sum();
-        if (value > answer)
-        {
-            count = 0;
-            answer = value;
-        }
-        else
-        {
-            ++count;
-            if (count > 999)
-            {
-                break;
-            }
-        }
     }
 
-    return answer;
+    return energized.Select(l => l.Count(c => c.Count > 0)).Sum();
 }
 
 void part1(string file_name)
@@ -120,48 +103,24 @@ void part1(string file_name)
 void part2(string file_name)
 {
     string[] lines = readFileLines(file_name);
-    long answer = 0;
+    List<long> scores = new();
     for (int i=0; i < lines.Length; i++)
     {
-        long sub = solve(file_name, new Point(0, i), RIGHT);
-        if(sub > answer)
-        {
-            answer = sub;
-        }
-        Console.WriteLine($"   Part 2 - {file_name}: {answer}");
-    }
-    for (int i = 0; i < lines.Length; i++)
-    {
-        long sub = solve(file_name, new Point(lines[i].Length - 1, i), LEFT);
-        if (sub > answer)
-        {
-            answer = sub;
-        }
-        Console.WriteLine($"  Part 2 - {file_name}: {answer}");
+        scores.Add(solve(file_name, new Point(0, i), RIGHT));
+        scores.Add(solve(file_name, new Point(lines[i].Length - 1, i), LEFT));
     }
     for (int i = 0; i < lines[0].Length; i++)
     {
-        long sub = solve(file_name, new Point(i, 0), DOWN);
-        if (sub > answer)
-        {
-            answer = sub;
-        }
-        Console.WriteLine($" Part 2 - {file_name}: {answer}");
+        scores.Add(solve(file_name, new Point(i, 0), DOWN));
+        scores.Add(solve(file_name, new Point(i, lines.Length - 1), UP));
     }
-    for (int i = 0; i < lines[0].Length; i++)
-    {
-        long sub = solve(file_name, new Point(i, lines.Length - 1), UP);
-        if (sub > answer)
-        {
-            answer = sub;
-        }
-        Console.WriteLine($"Part 2 - {file_name}: {answer}");
-    }
+    long answer = scores.Max();
+    Console.WriteLine($"Part 2 - {file_name}: {answer}");
 }
 
-//part1("sample.txt");
-//part1("input.txt");
-//part2("sample.txt");
+part1("sample.txt");
+part1("input.txt");
+part2("sample.txt");
 part2("input.txt");
 
 delegate Point Move(Point p);
