@@ -131,6 +131,7 @@ namespace Library
         public static IEnumerable<IEnumerable<long>> ExtractLongs(this IEnumerable<string> str) => str.Select(s => Regex.Matches(s, @"\d+").Select(_ => long.Parse(_.Value)));
         public static IEnumerable<IEnumerable<long>> ExtractSignedLongs(this IEnumerable<string> str) => str.Select(s => Regex.Matches(s, @"-?\d+").Select(_ => long.Parse(_.Value)));
 
+        public static string get(this Match m, string named_capture) => m.Groups[named_capture].Value;
     }
 
     public static class LinqExtensions

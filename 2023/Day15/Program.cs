@@ -1,8 +1,9 @@
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using static Library.Parsing;
 
 Regex parse_regex = new Regex(@"(?<label>.*?)(?<operation>[-=])(?<focal_length>\d*)");
-long focalLength(Match lens) => long.Parse(lens.Groups["focal_length"].Value);
+long focalLength(Match lens) => long.Parse(lens.get("focal_length"));
 long HASH(string str) => str.Aggregate(0, (a, b) => ((a + b) * 17) % 256);
 long focusingPower(Dictionary<long, List<Match>> boxes) =>
     boxes.Select(box => box.Value.Select((l, i) => (i + 1) * focalLength(l)).Sum(v => v * (box.Key + 1))).Sum();
@@ -21,14 +22,14 @@ void part2(string file_name)
     foreach (var step in steps)
     {
         var match = parse_regex.Match(step);
-        var lensMatches = (Match m) => m.Groups["label"].Value == match.Groups["label"].Value;
-        long box = HASH(match.Groups["label"].Value);
+        var lensMatches = (Match m) => m.get("label") == match.get("label");
+        long box = HASH(match.get("label"));
 
         if (!boxes.ContainsKey(box)) boxes[box] = new List<Match>();
 
         int index = boxes[box].FindIndex(_ => lensMatches(_));
 
-        if (match.Groups["operation"].Value == "-")
+        if (match.get("operation") == "-")
         {
             boxes[box] = boxes[box].Where(_ => !lensMatches(_)).ToList();
         }
