@@ -3,6 +3,7 @@ using static Library.Geometry;
 using static Library.Parsing;
 
 using Beam = (Library.Geometry.Point loc, int dir);
+
 int UP = 0;
 int LEFT = 1;
 int DOWN = 2;
@@ -20,7 +21,7 @@ List<Beam> simBeam(Beam beam, string[] contraption)
 {
     if (contraption[(int)beam.loc.Y][(int)beam.loc.X] == '.')
     {
-        return new List<Beam>() { new Beam(moves[beam.dir](beam.loc), beam.dir) };
+        return new List<Beam>() { (moves[beam.dir](beam.loc), beam.dir) };
     }
     else if(contraption[(int)beam.loc.Y][(int)beam.loc.X] == '/')  // U -> R, L -> D, D -> L, R -> U
     {
@@ -118,9 +119,10 @@ void part2(string file_name)
     Console.WriteLine($"Part 2 - {file_name}: {answer}");
 }
 
-part1("sample.txt");
-part1("input.txt");
-part2("sample.txt");
+//part1("sample.txt");
+//part1("input.txt");
+//part2("sample.txt");
 part2("input.txt");
 
+Console.WriteLine();
 delegate Point Move(Point p);
