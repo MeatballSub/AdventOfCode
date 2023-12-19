@@ -86,12 +86,12 @@ namespace Library
             return Math.Sqrt((delta.X * delta.X) + (delta.Y * delta.Y) + (delta.Z * delta.Z));
         }
 
-        public static T Left<T>(this T point) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X - 1, point.Y, point.Z));
-        public static T Right<T>(this T point) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X + 1, point.Y, point.Z));
-        public static T Up<T>(this T point) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y - 1, point.Z));
-        public static T Down<T>(this T point) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y + 1, point.Z));
-        public static T Toward<T>(this T point) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y, point.Z - 1));
-        public static T Away<T>(this T point) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y, point.Z + 1));
+        public static T Left<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X - dist, point.Y, point.Z));
+        public static T Right<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X + dist, point.Y, point.Z));
+        public static T Up<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y - dist, point.Z));
+        public static T Down<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y + dist, point.Z));
+        public static T Toward<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y, point.Z - dist));
+        public static T Away<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y, point.Z + dist));
 
         public static IEnumerable<T> orthogonalNeighbors<T>(this T point) where T : IPoint3d<T> => allNeighbors(point).Where(_ => manhattanDistance(_, point) == 1);
 
