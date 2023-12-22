@@ -12,7 +12,7 @@ bool isValidDir(Graph g, VertexType vertex, int new_dir, int min_count, int max_
     int count = 1 + ((new_dir == vertex.dir) ? vertex.count : 0);
     Point newLoc = Graph.moves[new_dir](vertex.p);
 
-    bool reverse_dir = (new_dir == (vertex.dir + 2) % 4);
+    bool reverse_dir = vertex.dir != 4 && (new_dir == (vertex.dir + 2) % 4);
     bool too_far_without_turn = (count > max_count);
     bool not_far_enough = (vertex.dir != new_dir && vertex.dir != 4 && vertex.count < min_count);
     bool out_of_bounds = !inBounds(newLoc);
@@ -98,6 +98,15 @@ class Graph : BaseGraph<VertexType, long>
         { 3, p => p.Right() }
     };
 
+    public static Dictionary<int, char> dirToChar = new()
+    {
+        { 0, 'N' },
+        { 1, 'W' },
+        { 2, 'S' },
+        { 3, 'E' },
+        { 4, ' ' },
+    };
+
     public List<List<long>> blocks = new();
     public long height = -1;
     public long width = -1;
@@ -113,8 +122,25 @@ class Graph : BaseGraph<VertexType, long>
 
     public override List<VertexType> neighbors(VertexType vertex) => getNeighbors(vertex);
 
+    public void writeVertex(VertexType vertex)
+    {
+        string pathToArrive = new string(dirToChar[vertex.dir], vertex.count);
+        pathToArrive = string.Join(',', pathToArrive.Select(c => $@"""{c}"""));
+        Console.Write("{\"0\":" + vertex.p.Y + ",\"1\":" + vertex.p.X + ",\"weight\":" + cost(vertex, vertex) + ",\"pathToArrive\":[" + pathToArrive + "]}");
+    }
+
     public override void visit(VertexType vertex)
     {
+        //Console.Write("Visiting: ");
+        //writeVertex(vertex);
+        //Console.WriteLine();
+        //Console.WriteLine("  Neighbors:");
+        //foreach(var neighbor in neighbors(vertex))
+        //{
+        //    Console.Write("    ");
+        //    writeVertex(neighbor);
+        //    Console.WriteLine();
+        //}
         if (goalTest(vertex))
         {
             throw new GoalFoundException(vertex);
