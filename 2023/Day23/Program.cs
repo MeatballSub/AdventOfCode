@@ -4,28 +4,24 @@ using static Library.Geometry;
 using static Library.Optimize;
 using static Library.Parsing;
 
-using VertexType = (Library.Geometry.Point loc, Library.Geometry.Point prev);
+//using VertexType = (Library.Geometry.Point loc, Library.Geometry.Point prev);
 
 void part1(string file_name)
 {
     string[] lines = readFileLines(file_name);
     Graph g = new(lines);
-    g.goalTest = v => v.loc.Y == g.height - 1;
+    //g.goalTest = v => v.loc.Y == g.height - 1;
     VertexType start = new (new Point(lines[0].IndexOf('.'), 0), null);
+    VertexType goal = new(new Point(lines[g.height - 1].IndexOf('.'), g.height - 1), null);
     long answer = 0;
-    try
-    {
-        Search(g, start);
-    }
-    catch(GoalFoundException e)
-    {
-        g.showPath(e.Value);
-        answer = g.getBestCost(e.Value);
-    }
+    Search(g, start);
+    g.showPath(goal);
+    answer = g.getBestCost(goal);
     Console.WriteLine($"Part 1 - {file_name}: {answer}");
 }
 
-part1("sample.txt");
+//part1("sample.txt");
+part1("input.txt");
 
 class GoalFoundException(VertexType value) : Exception
 {
@@ -52,13 +48,34 @@ class GoalFoundException(VertexType value) : Exception
 //    }
 //}
 
+class VertexType:IEquatable<VertexType>
+{
+    public Point loc;
+    public Point prev;
+
+    public VertexType(Point l, Point p)
+    {
+        loc = l;
+        prev = p;
+    }
+
+    public bool Equals(VertexType? other)
+    {
+        return other.loc.Equals(loc);
+    }
+
+    public override int GetHashCode()
+    {
+        return loc.GetHashCode();
+    }
+}
 
 class Graph : BaseGraph<VertexType, long>
 {
-    public delegate bool GoalTest(VertexType location);
-    public delegate List<VertexType> GetNeighbors(VertexType location);
+    //public delegate bool GoalTest(VertexType location);
+    //public delegate List<VertexType> GetNeighbors(VertexType location);
 
-    public GoalTest goalTest;
+    //public GoalTest goalTest;
     //public GetNeighbors getNeighbors;
 
     public static Dictionary<int, Move> moves = new()
@@ -81,6 +98,8 @@ class Graph : BaseGraph<VertexType, long>
     }
 
     public override long cost(VertexType vertex1, VertexType vertex2) => -1;
+
+    //public override long heuristic(VertexType vertex) => 208 + getBestCost(new VertexType(vertex.prev, null));
 
     public override List<VertexType> neighbors(VertexType vertex)
     {
@@ -114,13 +133,13 @@ class Graph : BaseGraph<VertexType, long>
         return result;
     }
 
-    public override void visit(VertexType vertex)
-    {
-        if (goalTest(vertex))
-        {
-            throw new GoalFoundException(vertex);
-        }
-    }
+    //public override void visit(VertexType vertex)
+    //{
+    //    if (goalTest(vertex))
+    //    {
+    //        throw new GoalFoundException(vertex);
+    //    }
+    //}
 
     public void showPath(VertexType p)
     {

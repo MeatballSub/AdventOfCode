@@ -232,17 +232,18 @@ namespace Library
             graph.setBestCost(start_vertex, start_cost);
             frontier.Enqueue(start_vertex, start_potential);
 
-            while(frontier.TryDequeue(out VertexType? curr_vertex, out var _))
+            while(frontier.TryDequeue(out VertexType? curr_vertex, out var priority))
             {
                 if (visited.Contains(curr_vertex))
                 {
-                    continue;
+                    //continue;
                 }
 
                 graph.visit(curr_vertex);
-                visited.Add(curr_vertex);                
+                visited.Add(curr_vertex);
 
-                foreach(VertexType neighbor_vertex in graph.neighbors(curr_vertex))
+                var neighbors = graph.neighbors(curr_vertex);
+                foreach (VertexType neighbor_vertex in neighbors)
                 {
                     CostType neighbor_cost = graph.getBestCost(curr_vertex) + graph.cost(curr_vertex, neighbor_vertex);
                     CostType neighbor_potential = neighbor_cost + graph.heuristic(neighbor_vertex);
