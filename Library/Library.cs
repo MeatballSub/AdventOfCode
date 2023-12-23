@@ -234,7 +234,7 @@ namespace Library
 
             while(frontier.TryDequeue(out VertexType? curr_vertex, out var _))
             {
-                if(visited.Contains(curr_vertex))
+                if (visited.Contains(curr_vertex))
                 {
                     continue;
                 }
