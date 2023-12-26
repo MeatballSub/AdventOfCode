@@ -20,8 +20,8 @@ void part1(string file_name)
     Console.WriteLine($"Part 1 - {file_name}: {answer}");
 }
 
-//part1("sample.txt");
-part1("input.txt");
+part1("sample.txt");
+//part1("input.txt");
 
 class GoalFoundException(VertexType value) : Exception
 {
@@ -104,7 +104,7 @@ class Graph : BaseGraph<VertexType, long>
     public override List<VertexType> neighbors(VertexType vertex)
     {
         List<VertexType> result = new ();
-        if (grid.at(vertex.loc) == '.')
+        //if (grid.at(vertex.loc) == '.')
         {
             var inBounds = (Point p) => 0 <= p.Y && p.Y < height && 0 <= p.X && p.X < width;
             for (int i = 0; i < 4; ++i)
@@ -116,20 +116,20 @@ class Graph : BaseGraph<VertexType, long>
                 }
             }
         }
-        else
-        {
-            Point new_loc = grid.at(vertex.loc) switch
-            {
-                '^' => moves[0](vertex.loc),
-                '<' => moves[1](vertex.loc),
-                'v' => moves[2](vertex.loc),
-                '>' => moves[3](vertex.loc),
-            };
-            if (!new_loc.Equals(vertex.prev))
-            {
-                result.Add(new(new_loc, vertex.loc));
-            }
-        }
+        //else
+        //{
+        //    Point new_loc = grid.at(vertex.loc) switch
+        //    {
+        //        '^' => moves[0](vertex.loc),
+        //        '<' => moves[1](vertex.loc),
+        //        'v' => moves[2](vertex.loc),
+        //        '>' => moves[3](vertex.loc),
+        //    };
+        //    if (!new_loc.Equals(vertex.prev))
+        //    {
+        //        result.Add(new(new_loc, vertex.loc));
+        //    }
+        //}
         return result;
     }
 
