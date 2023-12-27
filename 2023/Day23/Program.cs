@@ -1,175 +1,170 @@
 using Library;
-using System.Numerics;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Xml.Linq;
 using static Library.Geometry;
 using static Library.Optimize;
 using static Library.Parsing;
 
-//using VertexType = (Library.Geometry.Point loc, Library.Geometry.Point prev);
+using SpaghettiStackNode = (Library.Geometry.Point loc, int index, int parent_index);
 
-void part1(string file_name)
+long start_time = Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond;
+long timeSinceStart() => (Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond) - start_time;
+
+char[][] parse(string file_name)
 {
     string[] lines = readFileLines(file_name);
-    Graph g = new(lines);
-    //g.goalTest = v => v.loc.Y == g.height - 1;
-    VertexType start = new (new Point(lines[0].IndexOf('.'), 0), null);
-    VertexType goal = new(new Point(lines[g.height - 1].IndexOf('.'), g.height - 1), null);
-    long answer = 0;
-    Search(g, start);
-    g.showPath(goal);
-    answer = g.getBestCost(goal);
-    Console.WriteLine($"Part 1 - {file_name}: {answer}");
+    return lines.Select(l => l.ToCharArray()).ToArray();
 }
 
-part1("sample.txt");
-//part1("input.txt");
-
-class GoalFoundException(VertexType value) : Exception
+Point? findEndpoint(char[][] grid, int row)
 {
-    public VertexType Value { get; init; } = value;
+    for (int i = 0; i < grid[row].Length; ++i)
+    {
+        if (grid[row][i] == '.')
+        {
+            return new Point(i, row);
+        }
+    }
+    return null;
 }
 
-//class LongestIsBetterCost: IComparable<LongestIsBetterCost>,
-//                           IAdditiveIdentity<LongestIsBetterCost, LongestIsBetterCost>,
-//                           IAdditionOperators<LongestIsBetterCost, LongestIsBetterCost, LongestIsBetterCost>
-//{
-//    public long steps = 0;
-//    public LongestIsBetterCost(long s) => steps = s;
+Point? findStart(char[][] grid) => findEndpoint(grid, 0);
 
-//    public static LongestIsBetterCost AdditiveIdentity => new(142*142);
+Point? findEnd(char[][] grid) => findEndpoint(grid, grid.Length - 1);
 
-//    public int CompareTo(LongestIsBetterCost? other)
-//    {
-//        return (other.steps > steps) ? 1 : (other.steps == steps) ? 0 : -1;
-//    }
+bool inBounds(Point p, char[][] grid) => 0 <= p.Y && p.Y < grid.Length && 0 <= p.X && p.X < grid[p.Y].Length;
 
-//    public static LongestIsBetterCost operator +(LongestIsBetterCost left, LongestIsBetterCost right)
-//    {
-//        return new(left.steps + right.steps);
-//    }
-//}
-
-class VertexType:IEquatable<VertexType>
+IEnumerable<Point> part1Neighbors(char[][] grid, Point p)
 {
-    public Point loc;
-    public Point prev;
-
-    public VertexType(Point l, Point p)
+    Dictionary<char, List<Point>> possibilities = new()
     {
-        loc = l;
-        prev = p;
-    }
-
-    public bool Equals(VertexType? other)
-    {
-        return other.loc.Equals(loc);
-    }
-
-    public override int GetHashCode()
-    {
-        return loc.GetHashCode();
-    }
-}
-
-class Graph : BaseGraph<VertexType, long>
-{
-    //public delegate bool GoalTest(VertexType location);
-    //public delegate List<VertexType> GetNeighbors(VertexType location);
-
-    //public GoalTest goalTest;
-    //public GetNeighbors getNeighbors;
-
-    public static Dictionary<int, Move> moves = new()
-    {
-        { 0, p => p.Up() },
-        { 1, p => p.Left() },
-        { 2, p => p.Down() },
-        { 3, p => p.Right() }
+        { '<', new List<Point>() {p.Left()} },
+        { '>', new List<Point>() {p.Right()} },
+        { '^', new List<Point>() {p.Up()} },
+        { 'v', new List<Point>() {p.Down()} },
+        { '.', new List<Point>() {p.Left(), p.Right(), p.Up(), p.Down()} },
     };
 
-    public string[] grid;
-    public long height = -1;
-    public long width = -1;
+    return possibilities[grid.at(p)].Where(p => inBounds(p, grid) && grid.at(p) != '#');
+}
 
-    public Graph(string[] lines)
+IEnumerable<Point> part2Neighbors(char[][] grid, Point p)
+{
+    return new List<Point>() { p.Left(), p.Right(), p.Up(), p.Down() }.Where(p => inBounds(p, grid) && grid.at(p) != '#');
+}
+
+
+long solve(string file_name, GetNeighbors getNeighbors)
+{
+    char[][] grid = parse(file_name);
+    Point? start = findStart(grid);
+    Point? end = findEnd(grid);
+    SpaghettiStack spaghetti_stack = new();
+    SpaghettiStackNode start_node = spaghetti_stack.Add(start);
+    Queue<SpaghettiStackNode> frontier = new();
+    List<long> step_counts = new();
+
+    frontier.Enqueue(start_node);
+    while (frontier.Count > 0)
     {
-        grid = lines;
-        height = lines.Count();
-        width = lines[0].Length;
-    }
-
-    public override long cost(VertexType vertex1, VertexType vertex2) => -1;
-
-    //public override long heuristic(VertexType vertex) => 208 + getBestCost(new VertexType(vertex.prev, null));
-
-    public override List<VertexType> neighbors(VertexType vertex)
-    {
-        List<VertexType> result = new ();
-        //if (grid.at(vertex.loc) == '.')
+        SpaghettiStackNode curr = frontier.Dequeue();
+        if (curr.loc.Equals(end))
         {
-            var inBounds = (Point p) => 0 <= p.Y && p.Y < height && 0 <= p.X && p.X < width;
-            for (int i = 0; i < 4; ++i)
+            step_counts.Add(spaghetti_stack.CountSteps(curr));
+        }
+        else
+        {
+            foreach (Point p in getNeighbors(grid, curr.loc))
             {
-                Point new_loc = moves[i](vertex.loc);
-                if (inBounds(new_loc) && grid.at(new_loc) != '#' && !new_loc.Equals(vertex.prev))
+                if (!spaghetti_stack.Visited(curr, p))
                 {
-                    result.Add(new(new_loc, vertex.loc));
+                    frontier.Enqueue(spaghetti_stack.Add(p, curr));
                 }
             }
         }
-        //else
-        //{
-        //    Point new_loc = grid.at(vertex.loc) switch
-        //    {
-        //        '^' => moves[0](vertex.loc),
-        //        '<' => moves[1](vertex.loc),
-        //        'v' => moves[2](vertex.loc),
-        //        '>' => moves[3](vertex.loc),
-        //    };
-        //    if (!new_loc.Equals(vertex.prev))
-        //    {
-        //        result.Add(new(new_loc, vertex.loc));
-        //    }
-        //}
-        return result;
     }
+    return step_counts.Max();
+}
 
-    //public override void visit(VertexType vertex)
-    //{
-    //    if (goalTest(vertex))
-    //    {
-    //        throw new GoalFoundException(vertex);
-    //    }
-    //}
-
-    public void showPath(VertexType p)
-    {
-        char[][] char_grid = grid.Select(_ => _.ToCharArray()).ToArray();
-        while (p.loc.Y != 0)
-        {
-            char_grid.at(p.loc) = 'O';
-            p = predecessors[p];
-        }
-        for (int y = 0; y < char_grid.Count(); y++)
-        {
-            for(int x = 0; x < char_grid[y].Length; x++)
-            {
-                Console.Write(char_grid[y][x]);
-            }
-            Console.WriteLine();
-        }
-    }
-};
-
-public static class extensions
+void part1(string file_name)
 {
-    public static char at(this string[] arr, Point p)
+    long answer = solve(file_name, part1Neighbors);
+    Console.WriteLine($"Part 1 - {file_name}: {answer}");
+    Console.WriteLine($"{timeSinceStart()} ms");
+}
+
+void part2(string file_name)
+{
+    long answer = solve(file_name, part2Neighbors);
+    Console.WriteLine($"Part 1 - {file_name}: {answer}");
+    Console.WriteLine($"{timeSinceStart()} ms");
+}
+
+part1("sample.txt");
+part1("input.txt");
+part2("sample.txt");
+part2("input.txt");
+
+class SpaghettiStack
+{
+
+    List<SpaghettiStackNode> stack = new();
+
+    public SpaghettiStack() { }
+
+    public SpaghettiStackNode Add(Point loc)
     {
-        return arr[(int)p.Y][(int)p.X];
+        SpaghettiStackNode new_node = new SpaghettiStackNode(loc, stack.Count, -1);
+        stack.Add(new_node);
+        return new_node;
     }
-    public static ref char at(this char[][] arr, Point p)
+
+    public SpaghettiStackNode Add(Point loc, SpaghettiStackNode parent)
     {
-        return ref arr[(int)p.Y][(int)p.X];
+        SpaghettiStackNode new_node = new SpaghettiStackNode(loc, stack.Count, parent.index);
+        stack.Add(new_node);
+        return new_node;
+    }
+
+    public HashSet<Point> Visited(SpaghettiStackNode node)
+    {
+        HashSet<Point> visited = new();
+        for (int index = node.index; index != -1; index = stack[index].parent_index)
+        {
+            visited.Add(stack[index].loc);
+        }
+
+        return visited;
+    }
+
+    public bool Visited(SpaghettiStackNode node, Point loc)
+    {
+        for (int index = node.index; index != -1; index = stack[index].parent_index)
+        {
+            if (stack[index].loc.Equals(loc)) return true;
+        }
+
+        return false;
+    }
+
+    public long CountSteps(SpaghettiStackNode node)
+    {
+        long steps = -1;  // offset start location
+        for(int index = node.index; index != -1; index = stack[index].parent_index)
+        {
+            ++steps;
+        }
+        return steps;
     }
 }
 
-delegate Point Move(Point p);
+static class Extensions
+{
+    public static ref char at(this char[][] arr, Point p)
+    {
+        return ref arr[p.Y][p.X];
+    }
+}
+
+delegate IEnumerable<Point> GetNeighbors(char[][] grid, Point p);
