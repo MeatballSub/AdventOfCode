@@ -60,31 +60,39 @@ long solve(string file_name, GetNeighbors getNeighbors)
     char[][] grid = parse(file_name);
     Point? start = findStart(grid);
     Point? end = findEnd(grid);
-    SpaghettiStack spaghetti_stack = new();
-    SpaghettiStackNode start_node = spaghetti_stack.Add(start);
-    Queue<SpaghettiStackNode> frontier = new();
-    List<long> step_counts = new();
+    long max_step_count = 0;
 
-    frontier.Enqueue(start_node);
-    while (frontier.Count > 0)
+    Stack<Point> visited = new Stack<Point>();
+    Stack<(Point?, Point?)> frontier = new();
+    frontier.Push((start, null));
+    while(frontier.Count > 0)
     {
-        SpaghettiStackNode curr = frontier.Dequeue();
-        if (curr.loc.Equals(end))
+        (Point curr, Point parent) = frontier.Pop();
+        while(parent != null && !parent.Equals(visited.Peek()))
         {
-            step_counts.Add(spaghetti_stack.CountSteps(curr));
+            visited.Pop();
+        }
+        if(curr.Equals(end))
+        {
+            if(visited.Count > max_step_count)
+            {
+                max_step_count = visited.Count;
+                Console.WriteLine($"{max_step_count} - {timeSinceStart()}");
+            }
         }
         else
         {
-            foreach (Point p in getNeighbors(grid, curr.loc))
+            visited.Push(curr);
+            foreach (Point p in getNeighbors(grid, curr))
             {
-                if (!spaghetti_stack.Visited(curr, p))
+                if (!visited.Contains(p))
                 {
-                    frontier.Enqueue(spaghetti_stack.Add(p, curr));
+                    frontier.Push((p, curr));
                 }
             }
         }
     }
-    return step_counts.Max();
+    return max_step_count;
 }
 
 void part1(string file_name)
@@ -94,10 +102,16 @@ void part1(string file_name)
     Console.WriteLine($"{timeSinceStart()} ms");
 }
 
+// 5766 is too low
+// 5822 is too low
+// 5966 is not right
+// 6146 is not right
+// 6302 is not right
+// 9246 is not right
 void part2(string file_name)
 {
     long answer = solve(file_name, part2Neighbors);
-    Console.WriteLine($"Part 1 - {file_name}: {answer}");
+    Console.WriteLine($"Part 2 - {file_name}: {answer}");
     Console.WriteLine($"{timeSinceStart()} ms");
 }
 

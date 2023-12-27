@@ -4,6 +4,7 @@ using static Library.Geometry;
 using static Library.Optimize;
 using static Library.Parsing;
 
+// Stoer-Wagner
 (string source, string sink) stMinCut(Graph g)
 {
     PriorityQueue<string, long> frontier = new();
