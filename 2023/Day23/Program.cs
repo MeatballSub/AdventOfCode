@@ -1,23 +1,21 @@
 using Library;
-using System.ComponentModel;
+using System;
 using System.Diagnostics;
-using System.Xml.Linq;
+using System.Text;
 using static Library.Geometry;
 using static Library.Optimize;
 using static Library.Parsing;
 
-using SpaghettiStackNode = (Library.Geometry.Point loc, int index, int parent_index);
-
 long start_time = Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond;
-long timeSinceStart() => (Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond) - start_time;
+long timeSinceStart () => (Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond) - start_time;
 
 char[][] parse(string file_name)
 {
-    string[] lines = readFileLines(file_name);
+string[] lines = readFileLines(file_name);
     return lines.Select(l => l.ToCharArray()).ToArray();
 }
 
-Point? findEndpoint(char[][] grid, int row)
+Point findEndpoint(char[][] grid, int row)
 {
     for (int i = 0; i < grid[row].Length; ++i)
     {
@@ -26,159 +24,121 @@ Point? findEndpoint(char[][] grid, int row)
             return new Point(i, row);
         }
     }
-    return null;
+    throw new IndexOutOfRangeException();
 }
 
-Point? findStart(char[][] grid) => findEndpoint(grid, 0);
+Point findStart (char[][] grid) => findEndpoint(grid, 0);
 
-Point? findEnd(char[][] grid) => findEndpoint(grid, grid.Length - 1);
+Point findEnd (char[][] grid) => findEndpoint(grid, grid.Length - 1);
 
-bool inBounds(Point p, char[][] grid) => 0 <= p.Y && p.Y < grid.Length && 0 <= p.X && p.X < grid[p.Y].Length;
+var grid = parse("input.txt");
+Point start = findStart(grid);
+Point end = findEnd(grid);
 
-IEnumerable<Point> part1Neighbors(char[][] grid, Point p)
+Graph g = new(grid, start, end);
+
+long max_step_count = 0;
+Stack<Point> visited = new();
+Stack<(Point, Point?, long count)> frontier = new();
+frontier.Push((g.Start, null, 0));
+while(frontier.Count > 0)
 {
-    Dictionary<char, List<Point>> possibilities = new()
+    (Point curr, Point parent, long count) = frontier.Pop();
+    while((parent != null) && !parent.Equals(visited.Peek()))
     {
-        { '<', new List<Point>() {p.Left()} },
-        { '>', new List<Point>() {p.Right()} },
-        { '^', new List<Point>() {p.Up()} },
-        { 'v', new List<Point>() {p.Down()} },
-        { '.', new List<Point>() {p.Left(), p.Right(), p.Up(), p.Down()} },
-    };
-
-    return possibilities[grid.at(p)].Where(p => inBounds(p, grid) && grid.at(p) != '#');
-}
-
-IEnumerable<Point> part2Neighbors(char[][] grid, Point p)
-{
-    return new List<Point>() { p.Left(), p.Right(), p.Up(), p.Down() }.Where(p => inBounds(p, grid) && grid.at(p) != '#');
-}
-
-
-long solve(string file_name, GetNeighbors getNeighbors)
-{
-    char[][] grid = parse(file_name);
-    Point? start = findStart(grid);
-    Point? end = findEnd(grid);
-    long max_step_count = 0;
-
-    Stack<Point> visited = new Stack<Point>();
-    Stack<(Point?, Point?)> frontier = new();
-    frontier.Push((start, null));
-    while(frontier.Count > 0)
+        visited.Pop();
+    }
+    if(curr.Equals(g.End))
     {
-        (Point curr, Point parent) = frontier.Pop();
-        while(parent != null && !parent.Equals(visited.Peek()))
+        if(count > max_step_count)
         {
-            visited.Pop();
+            max_step_count = count;
+            Console.WriteLine($"{max_step_count} - {timeSinceStart()} ms");
         }
-        if(curr.Equals(end))
+    }
+    else
+    {
+        visited.Push(curr);
+        foreach (Point p in g.Neighbors(curr))
         {
-            if(visited.Count > max_step_count)
+            if (!visited.Contains(p))
             {
-                max_step_count = visited.Count;
-                Console.WriteLine($"{max_step_count} - {timeSinceStart()}");
+                frontier.Push((p, curr, count + g.Cost(p, curr)));
             }
         }
-        else
+    }
+}
+
+Console.WriteLine($"max_step_count = {max_step_count} - {timeSinceStart()} ms");
+
+
+class Graph
+{
+    public HashSet<Point> vertices;
+    public Dictionary<Point, Dictionary<Point, long>> edges = new();
+    public Point Start;
+    public Point End;
+    public Graph(char[][] grid, Point start, Point end)
+    {
+        Start = start;
+        End = end;
+        vertices = new() { start, end };
+        HashSet<Point> visited = new();
+        Stack<Point> frontier = new();
+        frontier.Push(start);
+        while( frontier.Count > 0 )
         {
-            visited.Push(curr);
-            foreach (Point p in getNeighbors(grid, curr))
+            Point p = frontier.Pop();
+            if (visited.Contains(p)) continue;
+            visited.Add(p);
+            var neighbors = p.orthogonalNeighbors().Where(n => grid.inBounds(n) && grid.at(n) != '#');
+            if(neighbors.Count() > 2)
             {
-                if (!visited.Contains(p))
+                vertices.Add(p);
+            }
+            neighbors.ToList().ForEach(n => frontier.Push(n));
+        }
+
+        foreach (var vertex in vertices)
+        {
+            foreach(var v_neighbor in vertex.orthogonalNeighbors().Where(n => grid.inBounds(n) && grid.at(n) != '#'))
+            {
+                visited.Clear();
+                visited.Add(vertex);
+                long steps = 0;
+                frontier.Push(v_neighbor);
+                while (frontier.Count > 0)
                 {
-                    frontier.Push((p, curr));
+                    Point p = frontier.Pop();
+                    if (visited.Contains(p)) continue;
+                    visited.Add(p);
+                    ++steps;
+                    var neighbors = p.orthogonalNeighbors().Where(n => grid.inBounds(n) && grid.at(n) != '#');
+                    if (vertices.Contains(p))
+                    {
+                        if (!edges.ContainsKey(vertex))
+                        {
+                            edges[vertex] = new();
+                        }
+                        edges[vertex][p] = steps;
+                    }
+                    else
+                    {
+                        neighbors.Where(n => !visited.Contains(n)).ToList().ForEach(n => frontier.Push(n));
+                    }
                 }
             }
         }
     }
-    return max_step_count;
-}
 
-void part1(string file_name)
-{
-    long answer = solve(file_name, part1Neighbors);
-    Console.WriteLine($"Part 1 - {file_name}: {answer}");
-    Console.WriteLine($"{timeSinceStart()} ms");
-}
+    public List<Point> Neighbors(Point p) => edges[p].Select(e => e.Key).ToList();
 
-// 5766 is too low
-// 5822 is too low
-// 5966 is not right
-// 6146 is not right
-// 6302 is not right
-// 9246 is not right
-void part2(string file_name)
-{
-    long answer = solve(file_name, part2Neighbors);
-    Console.WriteLine($"Part 2 - {file_name}: {answer}");
-    Console.WriteLine($"{timeSinceStart()} ms");
-}
-
-part1("sample.txt");
-part1("input.txt");
-part2("sample.txt");
-part2("input.txt");
-
-class SpaghettiStack
-{
-
-    List<SpaghettiStackNode> stack = new();
-
-    public SpaghettiStack() { }
-
-    public SpaghettiStackNode Add(Point loc)
-    {
-        SpaghettiStackNode new_node = new SpaghettiStackNode(loc, stack.Count, -1);
-        stack.Add(new_node);
-        return new_node;
-    }
-
-    public SpaghettiStackNode Add(Point loc, SpaghettiStackNode parent)
-    {
-        SpaghettiStackNode new_node = new SpaghettiStackNode(loc, stack.Count, parent.index);
-        stack.Add(new_node);
-        return new_node;
-    }
-
-    public HashSet<Point> Visited(SpaghettiStackNode node)
-    {
-        HashSet<Point> visited = new();
-        for (int index = node.index; index != -1; index = stack[index].parent_index)
-        {
-            visited.Add(stack[index].loc);
-        }
-
-        return visited;
-    }
-
-    public bool Visited(SpaghettiStackNode node, Point loc)
-    {
-        for (int index = node.index; index != -1; index = stack[index].parent_index)
-        {
-            if (stack[index].loc.Equals(loc)) return true;
-        }
-
-        return false;
-    }
-
-    public long CountSteps(SpaghettiStackNode node)
-    {
-        long steps = -1;  // offset start location
-        for(int index = node.index; index != -1; index = stack[index].parent_index)
-        {
-            ++steps;
-        }
-        return steps;
-    }
+    public long Cost(Point a, Point b) => edges[a][b];
 }
 
 static class Extensions
 {
-    public static ref char at(this char[][] arr, Point p)
-    {
-        return ref arr[p.Y][p.X];
-    }
-}
+    public static ref char at(this char[][] arr, Point p) => ref arr[p.Y][p.X];
 
-delegate IEnumerable<Point> GetNeighbors(char[][] grid, Point p);
+    public static bool inBounds(this char[][] arr, Point p) => 0 <= p.Y && p.Y < arr.Length && 0 <= p.X && p.X < arr[p.Y].Length;
+}
