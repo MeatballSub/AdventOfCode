@@ -140,7 +140,9 @@ void part2(string file_name)
                 z_dec = (long)Math.Round(z_0);
             }
         }
-    } while ((x_dec + v_x0_dec * t_dec != input[0][X] + input[0][VX] * t_dec) || (y_dec + v_y0_dec * t_dec != input[0][Y] + input[0][VY] * t_dec) || (z_dec + v_z0_dec * t_dec != input[0][Z] + input[0][VZ] * t_dec));
+    } while ((x_dec + v_x0_dec * t_dec != input[0][X] + input[0][VX] * t_dec) ||
+             (y_dec + v_y0_dec * t_dec != input[0][Y] + input[0][VY] * t_dec) ||
+             (z_dec + v_z0_dec * t_dec != input[0][Z] + input[0][VZ] * t_dec));
 
     long sum = x_dec + y_dec + z_dec;
 

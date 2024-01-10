@@ -1,4 +1,6 @@
 using Library;
+using System.IO;
+using System;
 using static Library.Geometry;
 using static Library.Optimize;
 using static Library.Parsing;
@@ -39,6 +41,39 @@ List<VertexType> neighbors(VertexType vertex, Graph g, int min_count, int max_co
     return result;
 }
 
+void drawGrid(char[][]grid, List<VertexType> path)
+{
+    for (int y = 0; y < grid.Length; y++)
+    {
+        for (int x = 0; x < grid[y].Length; x++)
+        {
+            Console.BackgroundColor = path.Select(n => n.p).Contains(new Point(x, y)) ? ConsoleColor.Red : ConsoleColor.Black;
+            Console.Write(grid[y][x]);
+            Console.BackgroundColor = ConsoleColor.Black;
+        }
+        Console.WriteLine();
+    }
+    Console.WriteLine();
+}
+
+void showPath(string[] lines, VertexType goal, Graph g)
+{
+    char[] move_symbols = "^<v>".ToCharArray();
+    char[][] grid = lines.Select(l => l.ToCharArray()).ToArray();
+    List<VertexType> path = g.getPathTo(goal).Skip(1).ToList();
+    drawGrid(grid, path);
+
+    foreach (var vertex in g.getPathTo(goal))
+    {
+        if (vertex.dir < move_symbols.Length)
+        {
+            grid.at(vertex.p) = move_symbols[vertex.dir];
+        }
+    }
+
+    drawGrid(grid, path);
+}
+
 long solve(string file_name, Graph.GoalTest goal_test, int min_count, int max_count)
 {
     string[] lines = readFileLines(file_name);
@@ -52,6 +87,7 @@ long solve(string file_name, Graph.GoalTest goal_test, int min_count, int max_co
     }
     catch (GoalFoundException e)
     {
+        showPath(lines, e.Value, g);
         answer = g.getBestCost(e.Value);
     }
     return answer;
@@ -147,5 +183,13 @@ class Graph : BaseGraph<VertexType, long>
         }
     }
 };
+
+static class Extensions
+{
+    public static ref char at(this char[][] arr, Point p)
+    {
+        return ref arr[p.Y][p.X];
+    }
+}
 
 delegate Point Move(Point p);

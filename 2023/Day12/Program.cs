@@ -90,10 +90,10 @@ void part2(string file_name)
     Console.WriteLine($"Part 2 - {file_name}: {answer}");
 }
 
-part1("sample.txt");
+//part1("sample.txt");
 //part1("input.txt");
 //part2("sample.txt");
-//part2("input.txt");
+part2("input.txt");
 
 
 class Key : IEquatable<Key>

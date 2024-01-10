@@ -214,6 +214,18 @@ namespace Library
             public virtual void setBestCost(VertexType vertex, CostType bestCost) => best_costs[vertex] = bestCost;
             public virtual bool containsBestCostFor(VertexType vertex) => best_costs.ContainsKey(vertex);
             public virtual void setPredecessor(VertexType vertex, VertexType predecessor) => predecessors[vertex] = predecessor;
+            public virtual List<VertexType> getPathTo(VertexType vertex)
+            {
+                VertexType curr = vertex;
+                List<VertexType> path = new() { curr };
+                while(predecessors.ContainsKey(curr))
+                {
+                    curr = predecessors[curr];
+                    path.Add(curr);
+                }
+                path.Reverse();
+                return path;
+            }
         }
 
         public static bool isBetterThan<T>(this T value, T other) where T : IComparable<T>

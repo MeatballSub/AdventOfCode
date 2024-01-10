@@ -11,7 +11,7 @@ long timeSinceStart () => (Stopwatch.GetTimestamp() / TimeSpan.TicksPerMilliseco
 
 char[][] parse(string file_name)
 {
-string[] lines = readFileLines(file_name);
+    string[] lines = readFileLines(file_name);
     return lines.Select(l => l.ToCharArray()).ToArray();
 }
 
