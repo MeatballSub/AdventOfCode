@@ -42,7 +42,7 @@ void part1(string file_name)
     Global.init();
     Button button = new();
     parse(file_name);
-    for(int i = 0; i < int.MaxValue; ++i)
+    for(int i = 0; i < 1000; ++i)
     {
         button.push();
         Queue<IModule> queue = new Queue<IModule>();
@@ -54,39 +54,69 @@ void part1(string file_name)
         }
     }
 
-    foreach (var item in Global.counts.Values)
-    {
-        Console.WriteLine($"  {item}");
-    }
     long answer = Global.counts.Values.Product();
     Console.WriteLine($"Part 1 - {file_name}: {answer}");
 }
 
-//part1("sample1.txt");
-//part1("sample2.txt");
-// 493478749 is too low
+void part2(string file_name)
+{
+    Global.init();
+    Button button = new();
+    parse(file_name);
+    while (Global.final_conjunction_input_counts.Count < ((Conjunction)Global.modules[Global.FINAL_CONJUNCTION]).state.Count)
+    {
+        button.push();
+        Queue<IModule> queue = new Queue<IModule>();
+        queue.Enqueue(button);
+        while (queue.Count > 0)
+        {
+            IModule module = queue.Dequeue();
+            module.activate().ForEach(m => queue.Enqueue(Global.modules[m]));
+        }
+    }
+
+    long answer = Global.final_conjunction_input_counts.Select(kvp => kvp.Value).LCM();
+    Console.WriteLine($"Part 2 - {file_name}: {answer}");
+}
+
+part1("sample1.txt");
+part1("sample2.txt");
 part1("input.txt");
+part2("input.txt");
 
 public static class Global
 {
     public const bool LOW = false;
     public const bool HIGH = true;
+    public const string FINAL_CONJUNCTION = "dt";
+    public static long button_count = 0;
     public static Dictionary<bool, long> counts = new Dictionary<bool, long>() { { false, 0 }, { true, 0 } };
     public static Dictionary<string, IModule> modules = new();
+    public static Dictionary<string, long> final_conjunction_input_counts = new();
+    
 
     public static void init()
     {
+        button_count = 0;
         modules.Clear();
         counts[true] = 0;
         counts[false] = 0;
+        final_conjunction_input_counts.Clear();
     }
 
     public static void sendPulse(string source, string target, bool pulse_type)
     {
-        //Console.WriteLine($"{source} -{(pulse_type ? "high" : "low")}-> {target}");
-        if(pulse_type == Global.LOW && target == "rx")
+        if(source == "button")
         {
-            Console.WriteLine(counts.Values.Sum());
+            ++button_count;
+        }
+        //Console.WriteLine($"{source} -{(pulse_type ? "high" : "low")}-> {target}");
+        if(pulse_type == Global.HIGH && target == FINAL_CONJUNCTION)
+        {
+            if(!final_conjunction_input_counts.ContainsKey(source))
+            {
+                final_conjunction_input_counts.Add(source, button_count);
+            }
         }
         ++counts[pulse_type];
         modules[target].receive(source, pulse_type);
