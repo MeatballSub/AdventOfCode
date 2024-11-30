@@ -156,6 +156,24 @@ long solve2(char[][] grid, Point start, long steps)
                                       countGrid(grid, reachable, gridTL["S tip"]) +
                                       countGrid(grid, reachable, gridTL["W tip"]);
 
+    long even_linear = countGrid(grid, reachable, gridTL["NE inner"]) +
+                       countGrid(grid, reachable, gridTL["SE inner"]) +
+                       countGrid(grid, reachable, gridTL["SW inner"]) +
+                       countGrid(grid, reachable, gridTL["NW inner"]);
+
+    long odd_linear = countGrid(grid, reachable, gridTL["NE outer"]) +
+                      countGrid(grid, reachable, gridTL["SE outer"]) +
+                      countGrid(grid, reachable, gridTL["SW outer"]) +
+                      countGrid(grid, reachable, gridTL["NW outer"]);
+
+    long constant = countGrid(grid, reachable, gridTL["N tip"]) +
+                    countGrid(grid, reachable, gridTL["E tip"]) +
+                    countGrid(grid, reachable, gridTL["S tip"]) +
+                    countGrid(grid, reachable, gridTL["W tip"]);
+
+    Console.WriteLine($"{countGrid(grid, reachable, gridTL["even full"])} * {evens}^2 + {even_linear} * {evens} + ");
+    Console.WriteLine($"{countGrid(grid, reachable, gridTL["odd full"])} * {odds}^2 + {odd_linear} * {odds} + ");
+    Console.WriteLine($"{constant}");
     //Console.WriteLine($"evens = {evens}, odds = {odds}");
     return full_count;
 }
@@ -185,6 +203,11 @@ part1("sample.txt", 4, 9);
 part1("sample.txt", 5, 13);
 part1("sample.txt", 6, 16);
 part1("input.txt", 64, 3699);
+for(int i = 0; i < 10; ++i)
+{
+    Console.Write($"Step Count: {i*131+65}, Grid Count: {i}, ");
+    part1("input.txt", i*131+65, 0);
+}
 part2("input.txt", 26501365, 613391294577878);
 
 static class Extensions

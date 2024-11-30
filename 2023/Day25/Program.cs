@@ -1,8 +1,10 @@
 using Library;
+using System.Diagnostics;
 using System.Numerics;
 using static Library.Geometry;
 using static Library.Optimize;
 using static Library.Parsing;
+
 
 // Stoer-Wagner
 (string source, string sink) stMinCut(Graph g)
@@ -100,7 +102,11 @@ void part2(string file_name)
 }
 
 part1("sample.txt");
+long start_time = Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond;
+long timeSinceStart() => (Stopwatch.GetTimestamp() / TimeSpan.TicksPerMillisecond) - start_time;
+
 part1("input.txt");
+Console.WriteLine($"{timeSinceStart()} ms");
 //part2("sample.txt");
 //part2("input.txt");
 
