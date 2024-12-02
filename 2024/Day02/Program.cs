@@ -18,7 +18,6 @@ void part2(string file_name)
     Console.WriteLine($"part 2 - {file_name}: {safe_reports.Count()}");
 }
 
-
 part1("sample.txt");
 part1("input.txt");
 
