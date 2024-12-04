@@ -15,18 +15,15 @@ void part1(string file_name)
             {
                 for (int x_dir = -1; x_dir < 2; x_dir++)
                 {
-                    if (x_dir != 0 || y_dir != 0)
+                    int index = 0;
+                    var move = new Point(x_dir, y_dir);
+                    var next = new Point(w, h);
+                    while((index < search.Length) && next.boundsCheck(input) && (input.at(next) == search[index]))
                     {
-                        int index = 0;
-                        var move = new Point(x_dir, y_dir);
-                        var next = new Point(w, h);
-                        while((index < search.Length) && next.boundsCheck(input) && (input.at(next) == search[index]))
-                        {
-                            next += move;
-                            ++index;
-                        }
-                        if (index == search.Length) ++solution;
+                        next += move;
+                        ++index;
                     }
+                    if (index == search.Length) ++solution;
                 }
             }
         }
