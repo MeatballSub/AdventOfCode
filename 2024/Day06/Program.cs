@@ -77,10 +77,7 @@ void part2(string file_name)
         {
             map[p.Y][p.X] = '#';
 
-            if (simulate(map).is_loop)
-            {
-                ++solution;
-            }
+            if (simulate(map).is_loop) ++solution;
 
             map[p.Y][p.X] = '.';
         }
