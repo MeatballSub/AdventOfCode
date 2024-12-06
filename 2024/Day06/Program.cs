@@ -2,7 +2,7 @@ using Library;
 using static Library.Geometry;
 using static Library.Parsing;
 
-Dictionary<char, char> nextFacing = new Dictionary<char, char>()
+Dictionary<char, char> nextFacing = new ()
 {
     { '^', '>' },
     { '>', 'v' },
