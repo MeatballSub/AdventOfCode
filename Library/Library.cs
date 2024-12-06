@@ -126,6 +126,8 @@ namespace Library
 
         public static string[] readFileLines(string file_name) => File.ReadAllText(file_name).SplitLines();
 
+        public static char[][] readFileAsGrid(string file_name) => File.ReadAllText(file_name).SplitLines().Select(l => l.ToCharArray()).ToArray();
+
         public static IEnumerable<long> ExtractLongs(this string str) => Regex.Matches(str, @"\d+").Select(_ => long.Parse(_.Value));
         public static IEnumerable<long> ExtractSignedLongs(this string str) => Regex.Matches(str, @"-?\d+").Select(_ => long.Parse(_.Value));
         public static IEnumerable<IEnumerable<long>> ExtractLongs(this IEnumerable<string> str) => str.Select(s => Regex.Matches(s, @"\d+").Select(_ => long.Parse(_.Value)));
