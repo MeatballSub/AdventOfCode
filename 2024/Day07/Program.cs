@@ -1,33 +1,33 @@
 using Library;
 using static Library.Parsing;
 
-Dictionary<int, Func<long, long, long>> operations = new()
+Func<long, long, long>[] operations = 
 {
-    { 0, (a,b) => a + b },
-    { 1, (a,b) => a * b },
-    { 2, (a,b) => long.Parse(a.ToString() + b.ToString()) },
+    (a,b) => a + b,
+    (a,b) => a * b,
+    (a,b) => long.Parse(a.ToString() + b.ToString()),
 };
 
-(long test_value, IEnumerable<long> test_inputs) parse(string line)
+long test_value;
+long[] test_inputs;
+
+void parse(string line)
 {
-    var line_parts = line.Split(':');
-    var test_value = line_parts[0].ExtractLongs().First();
-    var line_inputs = line_parts[1].ExtractLongs();
-    return (test_value, line_inputs);
+    var values = line.ExtractLongs();
+    test_value = values.First();
+    test_inputs = values.Skip(1).ToArray();
 }
 
-bool validLine(long test_value, long accumulator, IEnumerable<long> test_inputs, int num_ops)
+bool validLine(long test_value, long accumulator, int input_index, int num_ops)
 {
-    if (test_inputs.Count() == 0) return test_value == accumulator;
-
-    long second = test_inputs.First();
+    if (input_index == test_inputs.Count()) return test_value == accumulator;
 
     for (int i = 0; i < num_ops; ++i)
     {
-        var result = operations[i](accumulator, second);
+        var result = operations[i](accumulator, test_inputs[input_index]);
         if (result <= test_value)
         {
-            if (validLine(test_value, result, test_inputs.Skip(1), num_ops)) return true;
+            if (validLine(test_value, result, input_index + 1, num_ops)) return true;
         }
     }
 
@@ -37,11 +37,12 @@ bool validLine(long test_value, long accumulator, IEnumerable<long> test_inputs,
 long solve(string file_name, int num_ops)
 {
     long solution = 0;
-    var input = readFileLines(file_name).Select(l => parse(l));
+    var input = readFileLines(file_name);
 
-    foreach (var (test_value, test_inputs) in input)
+    foreach (var line in input)
     {
-        if(validLine(test_value, test_inputs.First(), test_inputs.Skip(1), num_ops))
+        parse(line);
+        if(validLine(test_value, test_inputs[0], 1, num_ops))
         {
             solution += test_value;
         }
