@@ -16,20 +16,18 @@ Dictionary<int, Func<long, long, long>> operations = new()
     return (test_value, line_inputs);
 }
 
-bool validLine(long test_value, IEnumerable<long> test_inputs, int num_ops)
+bool validLine(long test_value, long accumulator, IEnumerable<long> test_inputs, int num_ops)
 {
-    long first = test_inputs.ElementAt(0);
-    if (test_inputs.Count() == 1) return test_value == first;
+    if (test_inputs.Count() == 0) return test_value == accumulator;
 
-    long second = test_inputs.ElementAt(1);
+    long second = test_inputs.First();
 
     for (int i = 0; i < num_ops; ++i)
     {
-        var result = operations[i](first, second);
+        var result = operations[i](accumulator, second);
         if (result <= test_value)
         {
-            var reduced_input = test_inputs.Skip(2).Prepend(result);
-            if (validLine(test_value, reduced_input, num_ops)) return true;
+            if (validLine(test_value, result, test_inputs.Skip(1), num_ops)) return true;
         }
     }
 
@@ -43,7 +41,7 @@ long solve(string file_name, int num_ops)
 
     foreach (var (test_value, test_inputs) in input)
     {
-        if(validLine(test_value, test_inputs, num_ops))
+        if(validLine(test_value, test_inputs.First(), test_inputs.Skip(1), num_ops))
         {
             solution += test_value;
         }
