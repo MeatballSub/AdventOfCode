@@ -1,65 +1,66 @@
 using Library;
 using static Library.Parsing;
 
-Func<long, long, long>[] operations = 
+long concat(long a, long b)
 {
-    (a,b) => a + b,
-    (a,b) => a * b,
-    (a,b) => long.Parse(a.ToString() + b.ToString()),
-};
+    long result = b;
+    while(b > 0)
+    {
+        a *= 10;
+        b /= 10;
+    }
+    return result + a;
+}
 
-long test_value;
 long[] test_inputs;
 
-void parse(string line)
+bool validLine1(long accumulator, int input_index)
 {
-    var values = line.ExtractLongs();
-    test_value = values.First();
-    test_inputs = values.Skip(1).ToArray();
+    if (accumulator > test_inputs[0]) return false;
+    if (input_index == test_inputs.Length) return (accumulator == test_inputs[0]);
+    var result = accumulator + test_inputs[input_index];
+    if (validLine1(result, input_index + 1)) return true;
+    result = accumulator * test_inputs[input_index];
+    return validLine1(result, input_index + 1);
 }
 
-bool validLine(long test_value, long accumulator, int input_index, int num_ops)
+bool validLine2(long accumulator, int input_index)
 {
-    if (input_index == test_inputs.Count()) return test_value == accumulator;
-
-    for (int i = 0; i < num_ops; ++i)
-    {
-        var result = operations[i](accumulator, test_inputs[input_index]);
-        if (result <= test_value)
-        {
-            if (validLine(test_value, result, input_index + 1, num_ops)) return true;
-        }
-    }
-
-    return false;
+    if (accumulator > test_inputs[0]) return false;
+    if (input_index == test_inputs.Length) return (accumulator == test_inputs[0]);
+    var result = accumulator + test_inputs[input_index];
+    if (validLine2(result, input_index + 1)) return true;
+    result = accumulator * test_inputs[input_index];
+    if (validLine2(result, input_index + 1)) return true;
+    result = concat(accumulator, test_inputs[input_index]);
+    return validLine2(result, input_index + 1);
 }
 
-long solve(string file_name, int num_ops)
+void part1(string file_name)
 {
     long solution = 0;
     var input = readFileLines(file_name);
 
     foreach (var line in input)
     {
-        parse(line);
-        if(validLine(test_value, test_inputs[0], 1, num_ops))
-        {
-            solution += test_value;
-        }
+        test_inputs = line.ExtractLongs().ToArray();
+        if (validLine1(test_inputs[1], 2)) solution += test_inputs[0];
     }
 
-    return solution;
-}
-
-void part1(string file_name)
-{
-    long solution = solve(file_name, 2);
     Console.WriteLine($"part 1 - {file_name}: {solution}");
 }
 
 void part2(string file_name)
 {
-    long solution = solve(file_name, 3);
+    long solution = 0;
+    var input = readFileLines(file_name);
+
+    foreach (var line in input)
+    {
+        test_inputs = line.ExtractLongs().ToArray();
+        if (validLine2(test_inputs[1], 2)) solution += test_inputs[0];
+    }
+
     Console.WriteLine($"part 2 - {file_name}: {solution}");
 }
 
