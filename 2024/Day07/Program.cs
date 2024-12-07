@@ -16,40 +16,36 @@ Dictionary<int, Func<long, long, long>> operations = new()
     return (test_value, line_inputs);
 }
 
+bool validLine(long test_value, IEnumerable<long> test_inputs, int num_ops)
+{
+    long first = test_inputs.ElementAt(0);
+    if (test_inputs.Count() == 1) return test_value == first;
+
+    long second = test_inputs.ElementAt(1);
+
+    for (int i = 0; i < num_ops; ++i)
+    {
+        var result = operations[i](first, second);
+        if (result <= test_value)
+        {
+            var reduced_input = test_inputs.Skip(2).Prepend(result);
+            if (validLine(test_value, reduced_input, num_ops)) return true;
+        }
+    }
+
+    return false;
+}
+
 long solve(string file_name, int num_ops)
 {
     long solution = 0;
+    var input = readFileLines(file_name).Select(l => parse(l));
 
-    var input = readFileLines(file_name);
-    var processed_lines = 0;
-    var ten_percent = input.Length / 10;
-    foreach (var line in input)
+    foreach (var (test_value, test_inputs) in input)
     {
-        var (test_value, test_inputs) = parse(line);
-        for(int i = 0; i < Math.Pow(num_ops, test_inputs.Count() - 1); ++i)
+        if(validLine(test_value, test_inputs, num_ops))
         {
-            long check_result = test_inputs.First();
-            int op_choice = i;
-            foreach (var line_input in test_inputs.Skip(1))
-            {
-                var operation_key = op_choice % num_ops;
-                check_result = operations[operation_key](check_result, line_input);
-                op_choice /= num_ops;
-            }
-            if (check_result == test_value)
-            {
-                solution += test_value;
-                break;
-            }
-        }
-        // it's slow on part 2 okay, I need to know it's progressing
-        if (ten_percent != 0)
-        {
-            ++processed_lines;
-            if (processed_lines % ten_percent == 0)
-            {
-                Console.WriteLine($"{processed_lines * 100 / input.Length}%");
-            }
+            solution += test_value;
         }
     }
 
