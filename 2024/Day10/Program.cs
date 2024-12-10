@@ -36,7 +36,7 @@ List<Point> score(char[][] map, Point trailhead)
         else
         {
             var validNeighbor = (Point n) => n.boundsCheck(map) && map.at(n) == map.at(curr) + 1;
-            foreach (var neighbor in curr.orthogonalNeighbors().Where(n => validNeighbor(n)))
+            foreach (var neighbor in curr.orthogonalNeighbors().Where(validNeighbor))
             {
                 frontier.Push(neighbor);
             }
