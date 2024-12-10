@@ -81,9 +81,3 @@ part2("sample.txt");
 part2("input.txt");
 
 delegate int ScoreFunc(char[][] map, Point trailhead);
-
-public static class Day6
-{
-    public static char at(this char[][] arr, Point p) => arr[p.Y][p.X];
-    public static bool boundsCheck(this Point p, char[][] arr) => p.X >= 0 && p.Y >= 0 && p.Y < arr.Length && p.X < arr[p.Y].Length;
-}

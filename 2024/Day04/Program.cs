@@ -68,9 +68,3 @@ part1("input.txt");
 
 part2("sample.txt");
 part2("input.txt");
-
-public static class Day4
-{
-    public static char at(this string[] arr, Point p) => arr[p.Y][(int)p.X];
-    public static bool boundsCheck(this Point p, string[] arr) => p.X >= 0 && p.Y >= 0 && p.Y < arr.Length && p.X < arr[p.Y].Length;
-}

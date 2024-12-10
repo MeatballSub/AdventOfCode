@@ -92,6 +92,9 @@ namespace Library
         public static T Down<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y + dist, point.Z));
         public static T Toward<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y, point.Z - dist));
         public static T Away<T>(this T point, long dist = 1) where T : IPoint3d<T> => T.createFrom(new Point3d(point.X, point.Y, point.Z + dist));
+        public static bool boundsCheck(this Point p, char[][] arr) => p.X >= 0 && p.Y >= 0 && p.Y < arr.Length && p.X < arr[p.Y].Length;
+        public static bool boundsCheck(this Point p, string[] arr) => p.X >= 0 && p.Y >= 0 && p.Y < arr.Length && p.X < arr[p.Y].Length;
+
 
         public static IEnumerable<T> orthogonalNeighbors<T>(this T point) where T : IPoint3d<T> => allNeighbors(point).Where(_ => manhattanDistance(_, point) == 1);
 
@@ -134,6 +137,8 @@ namespace Library
         public static IEnumerable<IEnumerable<long>> ExtractSignedLongs(this IEnumerable<string> str) => str.Select(s => Regex.Matches(s, @"-?\d+").Select(_ => long.Parse(_.Value)));
 
         public static string get(this Match m, string named_capture) => m.Groups[named_capture].Value;
+        public static char at(this char[][] arr, Geometry.Point p) => arr[p.Y][p.X];
+        public static char at(this string[] arr, Geometry.Point p) => arr[p.Y][(int)p.X];
     }
 
     public static class LinqExtensions
