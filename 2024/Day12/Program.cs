@@ -78,10 +78,19 @@ long countSides(HashSet<Point> area, ref char[][] map)
     long sides = 0;
     foreach(var p in area)
     {
+        bool up = area.Contains(p.Up());
+        bool left = area.Contains(p.Left());
+        bool down = area.Contains(p.Down());
+        bool right = area.Contains(p.Right());
+        bool ul = area.Contains(p.Up().Left());
+        bool ur = area.Contains(p.Up().Right());
+        bool ll = area.Contains(p.Down().Left());
+        bool lr = area.Contains(p.Down().Right());
+
         // Inner UL
         // +-
         // |X
-        if (!area.Contains(p.Up()) && !area.Contains(p.Left()))
+        if (!up && !left)
         {
             ++sides;
         }
@@ -89,7 +98,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         // Inner UR
         // -+
         // X|
-        if (!area.Contains(p.Up()) && !area.Contains(p.Right()))
+        if (!up && !right)
         {
             ++sides;
         }
@@ -97,7 +106,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         // Inner LL
         // |X
         // +-
-        if (!area.Contains(p.Down()) && !area.Contains(p.Left()))
+        if (!down && !left)
         {
             ++sides;
         }
@@ -105,7 +114,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         // Inner LR
         // X|
         // -+
-        if (!area.Contains(p.Down()) && !area.Contains(p.Right()))
+        if (!down && !right)
         {
             ++sides;
         }
@@ -114,7 +123,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         // XXX
         // X+-
         // X|
-        if (area.Contains(p.Down()) && area.Contains(p.Right()) && !area.Contains(p.Down().Right()))
+        if (down && right && !lr)
         {
             ++sides;
         }
@@ -123,7 +132,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         // XXX
         // -+X
         //  |X
-        if (area.Contains(p.Down()) && area.Contains(p.Left()) && !area.Contains(p.Down().Left()))
+        if (down && left && !ll)
         {
             ++sides;
         }
@@ -132,7 +141,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         // X| 
         // X+-
         // XXX
-        if (area.Contains(p.Up()) && area.Contains(p.Right()) && !area.Contains(p.Up().Right()))
+        if (up && right && !ur)
         {
             ++sides;
         }
@@ -141,7 +150,7 @@ long countSides(HashSet<Point> area, ref char[][] map)
         //  |X
         // -+X
         // XXX
-        if (area.Contains(p.Up()) && area.Contains(p.Left()) && !area.Contains(p.Up().Left()))
+        if (up && left && !ul)
         {
             ++sides;
         }
