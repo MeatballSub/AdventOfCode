@@ -105,7 +105,7 @@ void part3(string file_name, long width, long height)
         var x_dev = robots.Select(r => r.position.X).StdDev();
         var y_dev = robots.Select(r => r.position.Y).StdDev();
 
-        double running_x_dev = Math.Sqrt(x_dev_values.Select(v => v - x_dev_avg).Select(v => v * v).Sum()/x_dev_values.Count);
+        double running_x_dev = Math.Sqrt(x_dev_values.Select(v => v - x_dev_avg).Select(v => v * v).Sum() / x_dev_values.Count);
         double running_y_dev = Math.Sqrt(y_dev_values.Select(v => v - y_dev_avg).Select(v => v * v).Sum() / y_dev_values.Count);
 
         // outlier?
@@ -133,8 +133,8 @@ void part3(string file_name, long width, long height)
     }
 }
 
-//part1("sample.txt", 11, 7);
-//part1("input.txt", 101, 103);
+part1("sample.txt", 11, 7);
+part1("input.txt", 101, 103);
 
 //part2("input.txt", 101, 103);
 
