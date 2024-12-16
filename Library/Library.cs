@@ -193,6 +193,26 @@ namespace Library
         }
     }
 
+    public static class Testing
+    {
+        public static void test<T>(Func<string, T> test_func, string func_name, string file_name, T expected) where T : IEqualityOperators<T, T, bool>
+        {
+            var old_color = Console.ForegroundColor;
+            var actual = test_func(file_name);
+            if (actual == expected)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"{func_name} - {file_name}: {actual}");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"{func_name} - {file_name}[ actual: {actual} expected: {expected} ]");
+            }
+            Console.ForegroundColor = old_color;
+        }
+    }
+
     public static class Optimize
     {
         public interface IGraph<VertexType, CostType> where VertexType : IEquatable<VertexType> where CostType : IComparable<CostType>, IAdditiveIdentity<CostType, CostType>, IAdditionOperators<CostType, CostType, CostType>
