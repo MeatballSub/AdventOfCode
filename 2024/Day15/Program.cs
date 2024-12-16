@@ -1,7 +1,7 @@
 using static Library.Parsing;
 using static Library.Geometry;
 using System.Text;
-using System.Net;
+using System.Numerics;
 
 Dictionary<char, Func<Point, Point>> move_functions = new()
 {
@@ -19,25 +19,32 @@ Dictionary<char, Func<Point, Point>> swap_functions = new()
     { '<', p => p.Right() },
 };
 
-(char[][] map, string moves, Point robot_position) parse1(string file_name)
+void findRobot(ref char[][] map, out Point? robot_position)
 {
-    var parts = SplitBlankLine(file_name);
-    var map = parts[0].SplitLines().Select(l => l.ToCharArray()).ToArray();
-    var moves = parts[1].Replace("\n", String.Empty).Replace("\r", String.Empty);
-    Point robot_position = new Point(-1,-1);
+    robot_position = null;
 
-    for(int y = 0; y < map.Length; ++y)
+    for (int y = 0; y < map.Length; ++y)
     {
-        for(int x = 0; x < map[y].Length; ++x)
+        for (int x = 0; x < map[y].Length; ++x)
         {
             if (map[y][x] == '@')
             {
                 robot_position = new Point(x, y);
                 map[y][x] = '.';
-                break;
+                return;
             }
         }
     }
+}
+
+(char[][] map, string moves, Point robot_position) parse1(string file_name)
+{
+    var parts = SplitBlankLine(file_name);
+    var map = parts[0].SplitLines().Select(l => l.ToCharArray()).ToArray();
+    var moves = parts[1].Replace(Environment.NewLine, String.Empty);
+    findRobot(ref map, out var robot_position);
+
+    if (robot_position == null) throw new Exception("Couldn't find robot");
 
     return (map, moves, robot_position);
 }
@@ -244,9 +251,9 @@ void sim2(ref char[][] map, string moves, Point robot_start_position)
     }
 }
 
-void part1(string file_name)
+long part1(string file_name)
 {
-    var solution = 0;
+    var solution = 0L;
     var (map, moves, robot_position) = parse1(file_name);
     sim1(ref map, moves, robot_position);
     for(int y = 0; y < map.Length; y++)
@@ -260,12 +267,12 @@ void part1(string file_name)
         }
     }
 
-    Console.WriteLine($"part 1 - {file_name}: {solution}");
+    return solution;
 }
 
-void part2(string file_name)
+long part2(string file_name)
 {
-    var solution = 0;
+    var solution = 0L;
     var (map, moves, robot_position) = parse2(file_name);
     sim2(ref map, moves, robot_position);
     for (int y = 0; y < map.Length; y++)
@@ -279,17 +286,29 @@ void part2(string file_name)
         }
     }
 
-    Console.WriteLine($"part 2 - {file_name}: {solution}");
+    return solution;
 }
 
-Console.Write("Expecting: 10092 | ");
-part1("sample.txt");
-Console.Write("Expecting: 2028 | ");
-part1("sample2.txt");
-Console.Write("Expecting: 1499739 | ");
-part1("input.txt");
+void test<T>(Func<string, T> test_func, string func_name, string file_name, T expected) where T: IEqualityOperators<T,T,bool>
+{
+    var old_color = Console.ForegroundColor;
+    var actual = test_func(file_name);
+    if (actual == expected)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"{func_name} - {file_name}: {actual}");
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"{func_name} - {file_name}[ actual: {actual} expected: {expected} ]");
+    }
+    Console.ForegroundColor = old_color;
+}
 
-Console.Write("Expecting: 9021 | ");
-part2("sample.txt");
-Console.Write("Expecting: 1522215 | ");
-part2("input.txt");
+test(part1, "part1", "sample.txt", 10092);
+test(part1, "part1", "sample2.txt", 2028);
+test(part1, "part1", "input.txt", 1499739);
+
+test(part2, "part2", "sample.txt", 9021);
+test(part2, "part2", "input.txt", 1522215);
