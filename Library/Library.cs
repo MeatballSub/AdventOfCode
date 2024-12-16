@@ -131,6 +131,8 @@ namespace Library
 
         public static char[][] readFileAsGrid(string file_name) => File.ReadAllText(file_name).SplitLines().Select(l => l.ToCharArray()).ToArray();
 
+        public static string[] SplitBlankLine(string file_name) => File.ReadAllText(file_name).Split(Environment.NewLine + Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
         public static IEnumerable<long> ExtractLongs(this string str) => Regex.Matches(str, @"\d+").Select(_ => long.Parse(_.Value));
         public static IEnumerable<long> ExtractSignedLongs(this string str) => Regex.Matches(str, @"-?\d+").Select(_ => long.Parse(_.Value));
         public static IEnumerable<IEnumerable<long>> ExtractLongs(this IEnumerable<string> str) => str.Select(s => Regex.Matches(s, @"\d+").Select(_ => long.Parse(_.Value)));
@@ -255,7 +257,7 @@ namespace Library
             {
                 if (visited.Contains(curr_vertex))
                 {
-                    //continue;
+                    continue;
                 }
 
                 graph.visit(curr_vertex);
@@ -269,8 +271,8 @@ namespace Library
 
                     if (!graph.containsBestCostFor(neighbor_vertex) || neighbor_cost.isBetterThan(graph.getBestCost(neighbor_vertex)))
                     {
-                        graph.setPredecessor(neighbor_vertex, curr_vertex);
                         graph.setBestCost(neighbor_vertex, neighbor_cost);
+                        graph.setPredecessor(neighbor_vertex, curr_vertex);
                         frontier.Enqueue(neighbor_vertex, neighbor_potential);
                     }
                 }
