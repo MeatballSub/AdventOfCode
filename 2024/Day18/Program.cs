@@ -23,28 +23,26 @@ long part1(string file_name)
 Point part2(string file_name)
 {
     var input = readFileLines(file_name).Select(lineToPoint);
-    Graph g = new(input.Take(1024).ToHashSet());
-    Search(g, START);
-    List<Point> best_path = g.getPathTo(GOAL);
 
-    foreach(var new_point in input.Skip(1024))
+    int min_bound = 1025;
+    int max_bound = input.Count();
+    int mid_point = (min_bound + max_bound) / 2;
+
+    while (min_bound != mid_point)
     {
-        g.AddCorruption(new_point);
-
-        if (best_path.Contains(new_point))
+        Graph g = new(input.Take(mid_point).ToHashSet());
+        Search(g, START);
+        if (0 == g.getBestCost(GOAL))
         {
-            Search(g, START);
-
-            if (0 == g.getBestCost(GOAL))
-            {
-                return new_point;
-            }
-
-            best_path = g.getPathTo(GOAL);
+            max_bound = mid_point;
         }
+        else
+        {
+            min_bound = mid_point;
+        }
+        mid_point = (min_bound + max_bound) / 2;
     }
-
-    throw new Exception("No blocking point found!");
+    return input.Take(max_bound).Last();
 }
 
 test(part1, "part1", "input.txt", 356);
@@ -56,13 +54,6 @@ class Graph : BaseGraph<Point, long>
     public Graph(HashSet<Point> corruption)
     {
         this.corruption = new(corruption);
-    }
-
-    public void AddCorruption(Point p)
-    {
-        corruption.Add(p);
-        best_costs.Clear();
-        predecessors.Clear();
     }
 
     public override long cost(Point vertex1, Point vertex2)
