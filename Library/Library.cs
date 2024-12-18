@@ -195,11 +195,11 @@ namespace Library
 
     public static class Testing
     {
-        public static void test<T>(Func<string, T> test_func, string func_name, string file_name, T expected) where T : IEqualityOperators<T, T, bool>
+        public static void test<T>(Func<string, T> test_func, string func_name, string file_name, T expected) where T : IEquatable<T>
         {
             var old_color = Console.ForegroundColor;
             var actual = test_func(file_name);
-            if (actual == expected)
+            if (actual.Equals(expected))
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"{func_name} - {file_name}: {actual}");
