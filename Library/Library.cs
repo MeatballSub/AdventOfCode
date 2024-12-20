@@ -195,19 +195,19 @@ namespace Library
 
     public static class Testing
     {
-        public static void test<T>(Func<string, T> test_func, string func_name, string file_name, T expected) where T : IEquatable<T>
+        public static void test<TArgs, TResult>(Func<TArgs, TResult> test_func, string func_name, TArgs args, TResult expected) where TResult : IEquatable<TResult>
         {
             var old_color = Console.ForegroundColor;
-            var actual = test_func(file_name);
+            var actual = test_func(args);
             if (actual.Equals(expected))
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"{func_name} - {file_name}: {actual}");
+                Console.WriteLine($"{func_name} - {args}: {actual}");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{func_name} - {file_name}[ actual: {actual} expected: {expected} ]");
+                Console.WriteLine($"{func_name} - {args}[ actual: {actual} expected: {expected} ]");
             }
             Console.ForegroundColor = old_color;
         }
