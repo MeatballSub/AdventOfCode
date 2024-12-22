@@ -1,5 +1,7 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using System.Text.RegularExpressions;
+using static Library.Optimize;
 
 namespace Library
 {
@@ -141,6 +143,20 @@ namespace Library
         public static string get(this Match m, string named_capture) => m.Groups[named_capture].Value;
         public static char at(this char[][] arr, Geometry.Point p) => arr[p.Y][p.X];
         public static char at(this string[] arr, Geometry.Point p) => arr[p.Y][(int)p.X];
+        public static (bool found, Geometry.Point location) find(this char[][] arr, char c)
+        {
+            for(int y = 0; y < arr.Length; ++y)
+            {
+                for (int x = 0; x < arr[y].Length; ++x)
+                {
+                    if(arr[y][x] == c)
+                    {
+                        return (true, new Geometry.Point(x, y));
+                    }
+                }
+            }
+            return (false, new Geometry.Point(-1,-1));
+        }
     }
 
     public static class LinqExtensions
@@ -224,6 +240,8 @@ namespace Library
             void setPredecessor(VertexType vertex, VertexType predecessor);
             void setBestCost(VertexType vertex, CostType bestCost);
             CostType? getBestCost(VertexType vertex);
+            bool tryGetBestCost(VertexType vertex, out CostType? best_cost);
+
             bool containsBestCostFor(VertexType vertex);
         }
 
@@ -239,6 +257,8 @@ namespace Library
             public virtual CostType heuristic(VertexType vertex) => CostType.AdditiveIdentity;
 
             public virtual CostType? getBestCost(VertexType vertex) => best_costs.GetValueOrDefault(vertex, default);
+
+            public virtual bool tryGetBestCost(VertexType vertex, out CostType? best_cost) => best_costs.TryGetValue(vertex, out best_cost);
 
             public virtual void setBestCost(VertexType vertex, CostType bestCost) => best_costs[vertex] = bestCost;
             public virtual bool containsBestCostFor(VertexType vertex) => best_costs.ContainsKey(vertex);
@@ -261,9 +281,41 @@ namespace Library
         {
             return value.CompareTo(other) < 0;
         }
+    }
 
-        public static void Search<VertexType, CostType>(IGraph<VertexType, CostType> graph, VertexType start_vertex) where VertexType : IEquatable<VertexType> where CostType : IComparable<CostType>, IAdditiveIdentity<CostType, CostType>, IAdditionOperators<CostType, CostType, CostType>
-        {            
+    class SpagettiStack<T>
+    {
+        private List<(T item, int parent)> stack = new();
+
+        public int Push(T item, int parent)
+        {
+            int index = stack.Count;
+            stack.Add((item, parent));
+            return index;
+        }
+
+        public (T item, int parent) Get(int index)
+        {
+            return stack[index];
+        }
+
+        public List<T> GetPath(int index)
+        {
+            List<T> path = new();
+            while (index >= 0)
+            {
+                path.Add(stack[index].item);
+                index = stack[index].parent;
+            }
+            path.Reverse();
+            return path;
+        }
+    }
+
+    public static class GraphExtensions
+    {
+        public static void Search<VertexType, CostType>(this IGraph<VertexType, CostType> graph, VertexType start_vertex) where VertexType : IEquatable<VertexType> where CostType : IComparable<CostType>, IAdditiveIdentity<CostType, CostType>, IAdditionOperators<CostType, CostType, CostType>
+        {
             HashSet<VertexType> visited = new();
             PriorityQueue<VertexType, CostType> frontier = new();
 
@@ -273,7 +325,7 @@ namespace Library
             graph.setBestCost(start_vertex, start_cost);
             frontier.Enqueue(start_vertex, start_potential);
 
-            while(frontier.TryDequeue(out VertexType? curr_vertex, out var priority))
+            while (frontier.TryDequeue(out VertexType? curr_vertex, out var priority))
             {
                 if (visited.Contains(curr_vertex))
                 {
@@ -289,7 +341,7 @@ namespace Library
                     CostType neighbor_cost = graph.getBestCost(curr_vertex) + graph.cost(curr_vertex, neighbor_vertex);
                     CostType neighbor_potential = neighbor_cost + graph.heuristic(neighbor_vertex);
 
-                    if (!graph.containsBestCostFor(neighbor_vertex) || neighbor_cost.isBetterThan(graph.getBestCost(neighbor_vertex)))
+                    if (!graph.tryGetBestCost(neighbor_vertex, out var best_cost) || neighbor_cost.isBetterThan(best_cost))
                     {
                         graph.setBestCost(neighbor_vertex, neighbor_cost);
                         graph.setPredecessor(neighbor_vertex, curr_vertex);
@@ -297,6 +349,67 @@ namespace Library
                     }
                 }
             }
+        }
+
+        public static List<List<VertexType>> GetAllShortestPaths<VertexType, CostType>(this IGraph<VertexType, CostType> graph, VertexType start_vertex, VertexType end_vertex) where VertexType : IEquatable<VertexType> where CostType : IComparable<CostType>, IAdditiveIdentity<CostType, CostType>, IAdditionOperators<CostType, CostType, CostType>
+        {
+            List<List<VertexType>> paths = new();
+            SpagettiStack<VertexType> spaghetti_stack = new();
+            Dictionary<VertexType, CostType> visited = new();
+            PriorityQueue<int, CostType> frontier = new();
+            (bool found, CostType cost) min = (false, CostType.AdditiveIdentity);
+
+            CostType start_cost = CostType.AdditiveIdentity;
+            CostType start_potential = start_cost + graph.heuristic(start_vertex);
+            int start_index = spaghetti_stack.Push(start_vertex, -1);
+
+            graph.setBestCost(start_vertex, start_cost);
+            frontier.Enqueue(start_index, start_potential);
+
+            while (frontier.TryDequeue(out int curr, out var curr_cost))
+            {
+                if (min.found && min.cost.isBetterThan(curr_cost))
+                {
+                    break;
+                }
+
+                var curr_vertex = spaghetti_stack.Get(curr).item;
+
+                if (curr_vertex.Equals(end_vertex))
+                {
+                    if (!min.found)
+                    {
+                        min = (true, curr_cost);
+                    }
+                    paths.Add(spaghetti_stack.GetPath(curr));
+                    continue;
+                }
+
+                if (visited.TryGetValue(curr_vertex, out var visited_cost) && visited_cost.isBetterThan(curr_cost))
+                {
+                    continue;
+                }
+
+                graph.visit(curr_vertex);
+                visited[curr_vertex] = curr_cost;
+
+                var neighbors = graph.neighbors(curr_vertex);
+                foreach (VertexType neighbor_vertex in neighbors)
+                {
+                    CostType neighbor_cost = curr_cost + graph.cost(curr_vertex, neighbor_vertex);
+                    CostType neighbor_potential = neighbor_cost + graph.heuristic(neighbor_vertex);
+
+                    if (!graph.tryGetBestCost(neighbor_vertex, out var best_cost) || !best_cost.isBetterThan(neighbor_cost))
+                    {
+                        graph.setBestCost(neighbor_vertex, neighbor_cost);
+                        graph.setPredecessor(neighbor_vertex, curr_vertex);
+                        var neighbor_index = spaghetti_stack.Push(neighbor_vertex, curr);
+                        frontier.Enqueue(neighbor_index, neighbor_potential);
+                    }
+                }
+            }
+
+            return paths;
         }
     }
 }
