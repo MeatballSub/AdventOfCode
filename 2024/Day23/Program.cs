@@ -31,21 +31,18 @@ HashSet<string> BronKerbosch(HashSet<string> R, HashSet<string> P, HashSet<strin
     HashSet<string> max = new();
     foreach (var v in P)
     {
-        var new_R = new HashSet<string>(R);
-        var new_P = new HashSet<string>(P);
-        var new_X = new HashSet<string>(X);
-        new_R.Add(v);
-        new_P.IntersectWith(connections[v]);
-        new_X.IntersectWith(connections[v]);
+        var candidate = BronKerbosch(
+            R.Union(new List<string>() { v }).ToHashSet(),
+            P.Intersect(connections[v]).ToHashSet(),
+            X.Intersect(connections[v]).ToHashSet(),
+            connections);
 
-        var candidate = BronKerbosch(new_R, new_P, new_X, connections);
-        if (candidate.Count > max.Count)
-        {
-            max = candidate;
-        }
+        if (candidate.Count > max.Count) max = candidate;
+
         P.Remove(v);
         X.Add(v);
     }
+
     return max;
 }
 
