@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using static Library.Parsing;
 using static Library.Testing;
 
@@ -50,16 +51,12 @@ long part2(string file_name)
         GenerateSecrets(file_name);
     }
 
-    Dictionary<long, long> summed_sequences = new();
+    ConcurrentDictionary<long, long> summed_sequences = new();
     foreach(var dict in sequence_value_cache)
     {
         foreach(var (key, value) in dict.Value)
         {
-            if(!summed_sequences.ContainsKey(key))
-            {
-                summed_sequences[key] = 0;
-            }
-            summed_sequences[key] += value;
+            summed_sequences.AddOrUpdate(key, value, (k, v) => v + value);
         }
     }
     return summed_sequences.Max(kvp => kvp.Value);
