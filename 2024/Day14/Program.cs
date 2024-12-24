@@ -1,7 +1,6 @@
 using static Library.Geometry;
 using static Library.Parsing;
 using static Library.LinqExtensions;
-using System.Runtime.CompilerServices;
 
 IEnumerable<(Point position, Point velocity)> parse(string file_name)
 {
@@ -48,25 +47,30 @@ void part1(string file_name, long width, long height)
 
 void part2(string file_name, long width, long height)
 {
-    bool slow_version = false;
+    bool slow_version = true;
 
     var robots = parse(file_name);
+    Directory.CreateDirectory("images");
 
-    for(long i = 1; ; ++i)
+    for (long i = 1; ; ++i)
     {
         robots = robots.Select(r => (moveRobot(r, width, height), r.velocity));
 
         if (slow_version || (i == 6532))  // I had to do the slow version to figure out the answer
         {
-            var bitmap = new System.Drawing.Bitmap((int)width, (int)height);
-            foreach (var robot in robots)
+            if (i > 6382 && i < 6682)
             {
-                bitmap.SetPixel((int)robot.position.X, (int)robot.position.Y, System.Drawing.Color.Red);
-            }
-            bitmap.Save($"{i}.bmp");
-            if (!slow_version)
-            {
-                break;
+                var bitmap = new System.Drawing.Bitmap((int)width, (int)height);
+                foreach (var robot in robots)
+                {
+                    bitmap.SetPixel((int)robot.position.X, (int)robot.position.Y, System.Drawing.Color.Red);
+                }
+                var bmp_file = $"images/{i}.bmp";
+                bitmap.Save(bmp_file);
+                if (!slow_version)
+                {
+                    break;
+                }
             }
         }
     }
@@ -136,7 +140,7 @@ void part3(string file_name, long width, long height)
 part1("sample.txt", 11, 7);
 part1("input.txt", 101, 103);
 
-//part2("input.txt", 101, 103);
+part2("input.txt", 101, 103);
 
 part3("input.txt", 101, 103);
 
