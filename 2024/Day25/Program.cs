@@ -6,17 +6,13 @@ using static Library.Testing;
     List<List<int>> keys = new();
     List<List<int>> locks = new();
 
-    var input = SplitBlankLine(file_name);
-
-    foreach(var map in input)
+    foreach(var map in SplitBlankLine(file_name))
     {
         var lines = map.SplitLines();
-        bool is_lock = (lines[0].StartsWith('#'));
-        IEnumerable<string> count_this = is_lock ? lines.Skip(1) : lines.Reverse().Skip(1);
-        ref List<List<int>> storage = ref (is_lock ? ref locks : ref keys);
+        ref List<List<int>> storage = ref (lines[0].StartsWith('#') ? ref locks : ref keys);
 
         List<int> values = new() { 0, 0, 0, 0, 0 };
-        foreach (var line in count_this)
+        foreach (var line in lines.Skip(1).SkipLast(1))
         {
             for (int i = 0; i < line.Length; ++i)
             {
