@@ -41,15 +41,14 @@ long part2(string file_name)
     };
 
     var solution = 0L;
-    long old_solution;
 
+    IEnumerable<KeyValuePair<Geometry.Point, int>> accessible;
     do
     {
-        old_solution = solution;
-        var accessible = getAccessible(input, counts);
+        accessible = getAccessible(input, counts);
         solution += accessible.Count();
         accessible.ToList().ForEach(removeRoll);
-    } while (old_solution != solution);
+    } while (accessible.Count() != 0);
 
     return solution;
 }
