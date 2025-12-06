@@ -145,17 +145,33 @@ namespace Library
         public static char at(this string[] arr, Geometry.Point p) => arr[p.Y][(int)p.X];
         public static (bool found, Geometry.Point location) find(this char[][] arr, char c)
         {
-            for(int y = 0; y < arr.Length; ++y)
+            for (int y = 0; y < arr.Length; ++y)
             {
                 for (int x = 0; x < arr[y].Length; ++x)
                 {
-                    if(arr[y][x] == c)
+                    if (arr[y][x] == c)
                     {
                         return (true, new Geometry.Point(x, y));
                     }
                 }
             }
-            return (false, new Geometry.Point(-1,-1));
+            return (false, new Geometry.Point(-1, -1));
+        }
+
+        public static HashSet<Geometry.Point> find_all(this char[][] arr, char c)
+        {
+            HashSet<Geometry.Point> found = new();
+            for (int y = 0; y < arr.Length; ++y)
+            {
+                for (int x = 0; x < arr[y].Length; ++x)
+                {
+                    if (arr[y][x] == c)
+                    {
+                        found.Add(new Geometry.Point(x, y));
+                    }
+                }
+            }
+            return found;
         }
     }
 
@@ -267,7 +283,7 @@ namespace Library
             {
                 VertexType curr = vertex;
                 List<VertexType> path = new() { curr };
-                while(predecessors.ContainsKey(curr))
+                while (predecessors.ContainsKey(curr))
                 {
                     curr = predecessors[curr];
                     path.Add(curr);
