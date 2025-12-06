@@ -32,7 +32,7 @@ HashSet<string> BronKerbosch(HashSet<string> R, HashSet<string> P, HashSet<strin
     foreach (var v in P)
     {
         var candidate = BronKerbosch(
-            R.Union(new List<string>() { v }).ToHashSet(),
+            R.Union([v]).ToHashSet(),
             P.Intersect(connections[v]).ToHashSet(),
             X.Intersect(connections[v]).ToHashSet(),
             connections);
@@ -87,8 +87,55 @@ string part2(string file_name)
     return string.Join(',', LAN_party.Order());
 }
 
+string InternalSolve(string file_name)
+{
+    var input = File.ReadAllText(file_name);
+    HashSet<string> vertices = new();
+
+    ConcurrentDictionary<string, HashSet<string>> adjacencies = new();
+    foreach(var edge in input.SplitLines().Select(s => s.Split('-')))
+    {
+        vertices.Add(edge[0]);
+        vertices.Add(edge[1]);
+
+        adjacencies.AddOrUpdate(edge[0], new HashSet<string>([edge[1]]), (k, v) => v.Union([edge[1]]).ToHashSet());
+        adjacencies.AddOrUpdate(edge[1], new HashSet<string>([edge[0]]), (k, v) => v.Union([edge[0]]).ToHashSet());
+    }
+
+    var states = new Stack<(List<string>, HashSet<string>)>();
+    foreach (var vertex in vertices)
+        states.Push(([vertex], adjacencies[vertex]));
+
+    var visited = new HashSet<string>();
+    var longest = new List<string>();
+    while (states.TryPop(out var state))
+    {
+        var (path, adj) = state;
+
+        if (path.Count + adj.Count > longest.Count)
+        {
+            if (adj.Count == 0) longest = path;
+
+            foreach (var neighbor in adj)
+            {
+                var new_path = new List<string>([..path, neighbor]);
+                var key = string.Join(",", new_path.Order());
+                if (visited.Add(key))
+                {
+                    states.Push((new_path, adjacencies[neighbor].Intersect(adj).ToHashSet()));
+                }
+            }
+        }
+    }
+
+    return string.Join(",", longest.Order());
+}
+
 test(part1, "part1", "sample.txt", 7);
 test(part1, "part1", "input.txt", 1306);
 
 test(part2, "part2", "sample.txt", "co,de,ka,ta");
 test(part2, "part2", "input.txt", "bd,dk,ir,ko,lk,nn,ob,pt,te,tl,uh,wj,yl");
+
+test(InternalSolve, "InternalSolve", "sample.txt", "co,de,ka,ta");
+test(InternalSolve, "InternalSolve", "input.txt", "bd,dk,ir,ko,lk,nn,ob,pt,te,tl,uh,wj,yl");
