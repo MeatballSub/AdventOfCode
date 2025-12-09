@@ -45,15 +45,8 @@ void make_connection(List<HashSet<int>> circuits, Connection connection)
 long part1(string file_name)
 {
     int num_connections = (file_name == "sample.txt") ? 10 : 1000;
-
     var (junction_boxes, circuits, connections) = init_problem(file_name);
-    connections = connections.Take(num_connections).ToList();
-
-    foreach (var connection in connections)
-    {
-        make_connection(circuits, connection);
-    }
-
+    connections.Take(num_connections).ToList().ForEach(c => make_connection(circuits, c));
     return circuits.Select(c => c.Count).OrderDescending().Take(3).Product();
 }
 
@@ -65,7 +58,7 @@ long part2(string file_name)
     {
         make_connection(circuits, connection);
         final_connection = connection;
-        if (circuits.Count == 1) break; ;
+        if (circuits.Count == 1) break;
     }
 
     return junction_boxes[final_connection.index_1].X * junction_boxes[final_connection.index_2].X;
